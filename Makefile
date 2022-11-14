@@ -1,7 +1,7 @@
 clean: clean-pyc clean-test
 quality: set-style-dep check-quality
 style: set-style-dep set-style
-setup: set-precommit set-style-dep set-test-dep set-git set-dev
+setup: set-precommit set-style-dep set-test-dep set-git set-dev set-dataset
 test: set-test-dep set-test
 
 
@@ -47,3 +47,9 @@ clean-test:
 	rm -f .coverage.*
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
+
+##### for competition #####
+set-dataset:
+	wget https://aistages-prod-server-public.s3.amazonaws.com/app/Competitions/000207/data/data.tar.gz
+	tar -xf data.tar.gz
+	rm data.tar.gz
