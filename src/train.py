@@ -1,10 +1,14 @@
 import os
 import pickle as pickle
 
+import mlflow
+import mlflow.pytorch
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
 import sklearn
 import torch
+from mlflow import MlflowClient
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from transformers import (
     AutoConfig,
@@ -170,6 +174,12 @@ def train():
 
 
 def main():
+    mlflow.set_tracking_uri("http://kyc-system.mynetgear.com:5000")
+    mlflow.set_experiment("Boostcamp KLUE Contest")
+    mlflow.pytorch.autolog(
+        log_every_n_step=1,
+    )
+
     train()
 
 
