@@ -19,7 +19,7 @@ from transformers import (
 )
 
 from load_data import RE_Dataset, load_data, tokenized_dataset
-from mlflow_config import experiment_name, tracking_uri
+from mlflow_config_example import experiment_name, tracking_uri  # Please Set Your OWN CONFIG FILE
 from mlflow_logger import set_mlflow_logger
 
 
