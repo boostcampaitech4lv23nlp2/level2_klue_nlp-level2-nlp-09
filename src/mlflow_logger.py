@@ -16,15 +16,14 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
 
     try:
         if type(tracking_uri) != str:
-            raise Exception("##### tracking_uri must be a String Type Data!")
+            raise TypeError("##### tracking_uri must be a String Type Data!")
         if type(experiment_name) != str:
-            raise Exception("##### experiment_name must be a String Type Data!")
+            raise TypeError("##### experiment_name must be a String Type Data!")
         if type(logging_step) != int:
-            raise Exception("##### logging_step must be a Integer Type Data!")
+            raise TypeError("##### logging_step must be a Integer Type Data!")
     except Exception as e:
         print(e)
-        print("##### Type Error!! Plz Check your parameter from train.py")
-        print("##### Or Your Train will NOT BE LOGGED ON REMOTE")
+        raise TypeError("Plz Check your parameter from train.py. Or Your Train will NOT BE LOGGED ON REMOTE")
     else:
         print("All Parameters from baseline looks Alright")
         print("Connecting to MLflow...")
