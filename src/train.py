@@ -19,6 +19,7 @@ from transformers import (
 )
 
 from load_data import RE_Dataset, load_data, tokenized_dataset
+from mlflow_config import experiment_name, tracking_uri
 from mlflow_logger import set_mlflow_logger
 
 
@@ -171,7 +172,7 @@ def train():
 
 
 def main():
-    set_mlflow_logger()
+    set_mlflow_logger(tracking_uri, experiment_name, 100)
     train()
 
 
