@@ -5,15 +5,17 @@ from sklearn.model_selection import train_test_split
 
 
 def get_train_valid_split(
-    dataset: pd.DataFrame, test_size: float = 0.2, shuffle: bool = True, random_state: int = 404
+    dataset: pd.DataFrame, test_size: float = 0.2, shuffle: bool = True, random_state=404
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Args:
         dataset : pandas dataframe
         test_size (float, optional): train, valid dataset split ratio. Defaults to 0.2.
         shuffle (bool, optional): whether mix or not. Defaults to True.
-        stratify (bool, optional): label's distribution keep. Defaults to True.
         random_state (int, optional) : fix seed
+
+    Returns:
+        Tuple[pd.DataFrame, pd.DataFrame]: return dataframe
     """
 
     train_dataset, valid_dataset = train_test_split(
