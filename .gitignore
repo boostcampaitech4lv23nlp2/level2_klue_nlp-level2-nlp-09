@@ -140,4 +140,5 @@ dmypy.json
 .idea/
 .DS_Store
 test.ipynb
-
+mlflow_config.yml
+logs/

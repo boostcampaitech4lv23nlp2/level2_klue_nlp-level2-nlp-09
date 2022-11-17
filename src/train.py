@@ -19,6 +19,7 @@ from transformers import (
 )
 
 from load_data import RE_Dataset, load_data, tokenized_dataset
+from mlflow_logger import set_mlflow_logger
 from utils.get_train_valid_split import get_train_valid_split
 
 
@@ -173,6 +174,7 @@ def train():
 
 
 def main():
+    set_mlflow_logger("", "", 0)
     train()
 
 
