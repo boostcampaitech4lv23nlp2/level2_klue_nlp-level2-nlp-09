@@ -11,6 +11,7 @@ from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
     BertTokenizer,
+    HfArgumentParser,
     RobertaConfig,
     RobertaForSequenceClassification,
     RobertaTokenizer,
@@ -18,8 +19,10 @@ from transformers import (
     TrainingArguments,
 )
 
-from load_data import RE_Dataset, load_data, tokenized_dataset
+from data_loader.load_data import REDataset, load_data
+from load_data import RE_Dataset, tokenized_dataset
 from mlflow_logger import set_mlflow_logger
+from utils.util import DataTrainingArguments, ModelArguments
 
 
 def klue_re_micro_f1(preds, labels):
@@ -104,6 +107,8 @@ def label_to_num(label):
 
 
 def train():
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     # load model and tokenizer
     # MODEL_NAME = "bert-base-uncased"
     MODEL_NAME = "klue/bert-base"
