@@ -107,39 +107,36 @@ def label_to_num(label):
 
 
 def train():
+    # Using HfArgumentParser we can turn this class into argparse arguments to be able to specify them on the command line.
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    # load model and tokenizer
-    # MODEL_NAME = "bert-base-uncased"
-    MODEL_NAME = "klue/bert-base"
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
     # load dataset
-    train_dataset = load_data("../dataset/train/train.csv")
+    train_raw_dataset = load_data(data_args.train_file_path)
     # dev_dataset = load_data("../dataset/train/dev.csv") # validation용 데이터는 따로 만드셔야 합니다.
 
-    train_label = label_to_num(train_dataset["label"].values)
+    train_label = label_to_num(train_raw_dataset["label"].values)
     # dev_label = label_to_num(dev_dataset['label'].values)
 
-    # tokenizing dataset
-    tokenized_train = tokenized_dataset(train_dataset, tokenizer)
-    # tokenized_dev = tokenized_dataset(dev_dataset, tokenizer)
-
-    # make dataset for pytorch.
-    RE_train_dataset = RE_Dataset(tokenized_train, train_label)
-    # RE_dev_dataset = RE_Dataset(tokenized_dev, dev_label)
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    print(device)
     # setting model hyperparameter
-    model_config = AutoConfig.from_pretrained(MODEL_NAME)
-    model_config.num_labels = 30
+    model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=30)
 
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
+    # load model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
+
+    model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
     print(model.config)
+
     model.parameters
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
+
     model.to(device)
+
+    # Preprocessing the raw_datasets
+    # make dataset for pytorch.
+    train_dataset = REDataset(train_raw_dataset, tokenizer, train_label)
+    # RE_dev_dataset = RE_Dataset(tokenized_dev, dev_label)
 
     # 사용한 option 외에도 다양한 option들이 있습니다.
     # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
@@ -165,8 +162,8 @@ def train():
     trainer = Trainer(
         model=model,  # the instantiated 🤗 Transformers model to be trained
         args=training_args,  # training arguments, defined above
-        train_dataset=RE_train_dataset,  # training dataset
-        eval_dataset=RE_train_dataset,  # evaluation dataset
+        train_dataset=train_dataset,  # training dataset
+        eval_dataset=train_dataset,  # evaluation dataset
         compute_metrics=compute_metrics,  # define metrics function
     )
 
