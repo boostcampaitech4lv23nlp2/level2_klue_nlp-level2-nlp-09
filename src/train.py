@@ -20,9 +20,8 @@ from transformers import (
 )
 
 from data_loader.load_data import REDataset, load_data
-from mlflow_logger import set_mlflow_logger
 from model.metric import compute_metrics
-from utils.util import DataTrainingArguments, ModelArguments, label_to_num
+from utils.util import DataTrainingArguments, ModelArguments, label_to_num, set_mlflow_logger
 
 
 def train():
