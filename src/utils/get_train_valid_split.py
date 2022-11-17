@@ -3,12 +3,12 @@ from typing import Tuple
 import json
 import random
 
+import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 
-def get_train_test_split(
-    train_dataset: pd.DataFrame(), test_size: float = 0.1, random_seed: int = 404
+def get_train_valid_split(
+    train_dataset: pd.DataFrame(), valid_size: float = 0.1, random_seed: int = 404
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Args:
@@ -16,13 +16,14 @@ def get_train_test_split(
         test_size (float, optional): train dataset, valid dataset split ratio Defaults to 0.1.
         random_seed (int, optional): fix seed Defaults to 404.
     """
+    np.random.seed(random_seed)
 
     # load train label distribution
     with open("./utils/distribution.json", "r") as f:
         distribution = json.load(f)
 
     # valid data length
-    length = len(train_dataset) * test_size
+    length = len(train_dataset) * valid_size
 
     # train valid split
     valid_dataset = []

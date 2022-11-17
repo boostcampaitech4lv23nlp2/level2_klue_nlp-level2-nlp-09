@@ -114,7 +114,7 @@ def train():
     train_dataset = load_data("../dataset/train/train.csv")
 
     # train valid split
-    train_dataset, valid_dataset = get_train_valid_split(train_dataset, test_size=0.2, shuffle=True)
+    train_dataset, valid_dataset = get_train_valid_split(train_dataset, valid_size=0.1, random_seed=404)
 
     train_label = label_to_num(train_dataset["label"].values)
     valid_label = label_to_num(valid_dataset["label"].values)
