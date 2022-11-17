@@ -19,6 +19,7 @@ from transformers import (
 )
 
 from load_data import RE_Dataset, load_data, tokenized_dataset
+from mlflow_logger import set_mlflow_logger
 
 
 def klue_re_micro_f1(preds, labels):
@@ -170,6 +171,7 @@ def train():
 
 
 def main():
+    set_mlflow_logger("", "", 0)
     train()
 
 
