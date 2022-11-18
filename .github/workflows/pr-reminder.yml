@@ -1,10 +1,12 @@
 name: PRs reviews reminder
 
 on:
-  push
-  #schedule:
-    # Every weekday every 2 hours during working hours, send notification
-  #  - cron: "0 8-17/2 * * 1-5"
+  schedule:
+    - cron: "0 1 * * *" #KST: 10:00
+    - cron: "0 3 * * *" #KST: 12:00
+    - cron: "0 4 * * *" #KST: 13:00
+    - cron: "0 7 * * *" #KST: 16:00
+    - cron: "0 9 * * *" #KST: 18:00
 
 jobs:
   pr-reviews-reminder:
