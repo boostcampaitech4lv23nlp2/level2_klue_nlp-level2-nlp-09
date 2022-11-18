@@ -17,5 +17,5 @@ jobs:
         webhook-url: 'https://hooks.slack.com/services/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' # Required
         provider: 'slack' # Required (slack or msteams)
         channel: '#ecl-free-talking' # Optional, eg: #general
-        github-provider-map: 'wbin0718:U041WE3RDMX, FacerAin:U041WE4P8GZ, ghlrobin:U041HN2FGMR, kyc3492:U041388FBM5, jinmyeongAN:U041HR962M8' # Optional, eg: DavideViolante:UEABCDEFG,foobar:UAABCDEFG
+        github-provider-map: 'wbin0718:U041WE3RDMX,FacerAin:U041WE4P8GZ,ghlrobin:U041HN2FGMR,kyc3492:U041388FBM5,jinmyeongAN:U041HR962M8' # Optional, eg: DavideViolante:UEABCDEFG,foobar:UAABCDEFG
         ignore-label: '' # Optional, eg: no-reminder
