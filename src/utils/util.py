@@ -68,25 +68,42 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
         print("MLflow setup job finished")
 
 
-def get_training_args():
+def get_training_args(
+    output_dir="./results",
+    save_total_limit=5,
+    save_steps=500,
+    num_train_epochs=1,
+    learning_rate=5e-5,
+    per_device_train_batch_size=32,
+    per_device_eval_batch_size=32,
+    warmup_steps=500,
+    weight_decay=0.01,
+    logging_dir="./logs",
+    logging_steps=100,
+    evaluation_strategy="steps",
+    eval_steps=500,
+    load_best_model_at_end=True,
+):
     training_args = TrainingArguments(
-        output_dir="./results",  # output directory
-        save_total_limit=5,  # number of total save model.
-        save_steps=500,  # model saving step.
-        num_train_epochs=1,  # total number of training epochs
-        learning_rate=5e-5,  # learning_rate
-        per_device_train_batch_size=32,  # batch size per device during training
-        per_device_eval_batch_size=32,  # batch size for evaluation
-        warmup_steps=500,  # number of warmup steps for learning rate scheduler
-        weight_decay=0.01,  # strength of weight decay
-        logging_dir="./logs",  # directory for storing logs
-        logging_steps=100,  # log saving step.
-        evaluation_strategy="steps",  # evaluation strategy to adopt during training
+        output_dir=output_dir,  # output directory
+        save_total_limit=save_total_limit,  # number of total save model.
+        save_steps=save_steps,  # model saving step.
+        num_train_epochs=num_train_epochs,  # total number of training epochs
+        learning_rate=learning_rate,  # learning_rate
+        per_device_train_batch_size=per_device_train_batch_size,  # batch size per device during training
+        per_device_eval_batch_size=per_device_eval_batch_size,  # batch size for evaluation
+        warmup_steps=warmup_steps,  # number of warmup steps for learning rate scheduler
+        weight_decay=weight_decay,  # strength of weight decay
+        logging_dir=logging_dir,  # directory for storing logs
+        logging_steps=logging_steps,  # log saving step.
+        evaluation_strategy=evaluation_strategy,  # evaluation strategy to adopt during training
         # `no`: No evaluation during training.
         # `steps`: Evaluate every `eval_steps`.
         # `epoch`: Evaluate every end of epoch.
-        eval_steps=500,  # evaluation step.
-        load_best_model_at_end=True,
+        eval_steps=eval_steps,  # evaluation step.
+        load_best_model_at_end=load_best_model_at_end,
+        # 사용한 option 외에도 다양한 option들이 있습니다.
+        # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
     )
     return training_args
 
