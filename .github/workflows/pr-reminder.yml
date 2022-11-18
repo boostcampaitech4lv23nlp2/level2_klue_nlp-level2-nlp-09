@@ -2,11 +2,11 @@ name: PRs reviews reminder
 
 on:
   schedule:
-    - cron: "0 1 * * *" #KST: 10:00
-    - cron: "0 3 * * *" #KST: 12:00
-    - cron: "0 4 * * *" #KST: 13:00
-    - cron: "0 7 * * *" #KST: 16:00
-    - cron: "0 9 * * *" #KST: 18:00
+    - cron: "45 0 * * *" #KST: 10:00
+    - cron: "45 2 * * *" #KST: 12:00
+    - cron: "45 3 * * *" #KST: 13:00
+    - cron: "45 6 * * *" #KST: 16:00
+    - cron: "45 8 * * *" #KST: 18:00
 
 jobs:
   pr-reviews-reminder:
