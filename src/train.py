@@ -20,6 +20,7 @@ from transformers import (
 
 from load_data import RE_Dataset, load_data, tokenized_dataset
 from mlflow_logger import set_mlflow_logger
+from utils.get_train_valid_split import get_train_valid_split
 
 
 def klue_re_micro_f1(preds, labels):
@@ -111,18 +112,20 @@ def train():
 
     # load dataset
     train_dataset = load_data("../dataset/train/train.csv")
-    # dev_dataset = load_data("../dataset/train/dev.csv") # validation용 데이터는 따로 만드셔야 합니다.
+
+    # train valid split
+    train_dataset, valid_dataset = get_train_valid_split(train_dataset, valid_size=0.1, random_seed=404)
 
     train_label = label_to_num(train_dataset["label"].values)
-    # dev_label = label_to_num(dev_dataset['label'].values)
+    valid_label = label_to_num(valid_dataset["label"].values)
 
     # tokenizing dataset
     tokenized_train = tokenized_dataset(train_dataset, tokenizer)
-    # tokenized_dev = tokenized_dataset(dev_dataset, tokenizer)
+    tokenized_valid = tokenized_dataset(valid_dataset, tokenizer)
 
     # make dataset for pytorch.
     RE_train_dataset = RE_Dataset(tokenized_train, train_label)
-    # RE_dev_dataset = RE_Dataset(tokenized_dev, dev_label)
+    RE_valid_dataset = RE_Dataset(tokenized_valid, valid_label)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -161,7 +164,7 @@ def train():
         model=model,  # the instantiated 🤗 Transformers model to be trained
         args=training_args,  # training arguments, defined above
         train_dataset=RE_train_dataset,  # training dataset
-        eval_dataset=RE_train_dataset,  # evaluation dataset
+        eval_dataset=RE_valid_dataset,  # evaluation dataset
         compute_metrics=compute_metrics,  # define metrics function
     )
 
