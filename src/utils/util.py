@@ -41,7 +41,7 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
     else:
         print("All Parameters from baseline looks Alright")
         print("Connecting to MLflow...")
-        with open("mlflow_config.yml") as f:
+        with open("../config/mlflow_config.yml") as f:
             config_data = yaml.load(f, Loader=yaml.FullLoader)
             print(config_data)
         if tracking_uri == "":
