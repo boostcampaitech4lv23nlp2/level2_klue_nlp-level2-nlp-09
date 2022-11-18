@@ -141,4 +141,5 @@ dmypy.json
 .DS_Store
 test.ipynb
 mlflow_config.yml
+sftp_config.yml
 logs/
