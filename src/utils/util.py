@@ -178,7 +178,7 @@ class DataTrainingArguments:
     train_file_path: Optional[str] = field(
         default="../dataset/train/train.csv", metadata={"help": "A csv or a json file containing the training data."}
     )
-    validation_file: Optional[str] = field(
+    validation_file_path: Optional[str] = field(
         default="../dataset/train/train.csv", metadata={"help": "A csv or a json file containing the validation data."}
     )
     test_file: Optional[str] = field(default=None, metadata={"help": "A csv or a json file containing the test data."})
