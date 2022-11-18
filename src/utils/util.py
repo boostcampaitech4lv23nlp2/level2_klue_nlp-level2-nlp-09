@@ -80,6 +80,13 @@ def save_model_remote(experiment_name, special_word):
         special_word (String): A String Data that user can customize the name of the model.
                                User can add anything like hyper_parameter setting, user name, etc.
     """
+    with open("./config/mlflow_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+        print(config_data)
+    if experiment_name == "":
+        print("No input for experiment_name... import Default")
+        experiment_name = config_data["experiment_name"]
+
     model_id = uuid.uuid4().hex
 
     with open("./config/sftp_config.yml") as f:

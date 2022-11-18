@@ -69,11 +69,11 @@ def train():
     # train model
     trainer.train()
     model.save_pretrained("./best_model")
-    save_model_remote("Practice", "kyc3492")
+    save_model_remote("", "kyc3492")
 
 
 def main():
-    set_mlflow_logger("", "Practice", 0)
+    set_mlflow_logger("", "", 0)
     train()
 
 
