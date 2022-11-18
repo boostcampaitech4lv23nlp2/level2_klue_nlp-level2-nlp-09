@@ -3,23 +3,15 @@ from typing import Tuple
 import json
 import random
 
-import numpy as np
 import pandas as pd
 
-from utils.set_seed import set_seed
 
-
-def get_train_valid_split(
-    train_dataset: pd.DataFrame(), valid_size: float = 0.1, random_seed: int = 404
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def get_train_valid_split(train_dataset: pd.DataFrame(), valid_size: float = 0.1) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Args:
         dataset (pd.DataFrame): pandas dataframe
         test_size (float, optional): train dataset, valid dataset split ratio Defaults to 0.1.
-        random_seed (int, optional): fix seed Defaults to 404.
     """
-
-    set_seed(random_seed)
 
     # load train label distribution
     with open("./utils/distribution.json", "r") as f:
