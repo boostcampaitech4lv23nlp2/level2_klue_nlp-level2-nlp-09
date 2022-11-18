@@ -1,17 +1,23 @@
+import json
 import os
+import uuid
 
 import mlflow.pytorch
+import pysftp
 import yaml
+
+run_id = ""
 
 
 def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
     """A function sets mlfow logger environments.
 
-    :param `tracking_uri`: A String Data that informs uri of the mlflow site.
-                           Usually uses port 5000.
-    :param `experiment_name`: A String Data that informs experiment name at mlflow.
-                              If it doesn't exist at mlflow, it creates one using this name.
-    :param `logging_step`: An Integer Data sets how much steps
+    Args:
+        tracking_uri (String): A String Data that informs uri of the mlflow site.
+                               Usually uses port 5000.
+        experiment_name (String): A String Data that informs experiment name at mlflow.
+                                  If it doesn't exist at mlflow, it creates one using this name.
+        logging_step (Integer) : An Integer Data sets how much steps
     """
 
     try:
@@ -29,7 +35,7 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
         print("Connecting to MLflow...")
         with open("mlflow_config.yml") as f:
             config_data = yaml.load(f, Loader=yaml.FullLoader)
-            print(config_data)
+
         if tracking_uri == "":
             print("No input for tracking_uri... import Default")
             tracking_uri = config_data["tracking_uri"]
@@ -51,3 +57,48 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
         )
     finally:
         print("MLflow setup job finished")
+
+
+def save_model_remote(experiment_name, special_word):
+    """A function saves best model on remote storage.
+
+    Args:
+        experiment_name (String): A String Data that informs experiment name at mlflow.
+                                  If a folder which name is this doesn't exist at remote, it creates one using this name.
+        special_word (String): A String Data that user can customize the name of the model.
+                               User can add anything like hyper_parameter setting, user name, etc.
+    """
+    model_id = uuid.uuid4().hex
+
+    with open("sftp_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+    host = config_data["host"]
+    port = config_data["port"]
+    username = config_data["username"]
+    password = config_data["password"]
+
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+
+    mlflow.log_artifact("best_model/config.json")
+    with pysftp.Connection(host, port=port, username=username, password=password, cnopts=cnopts) as sftp:
+        print("connected!!")
+        sftp.chdir("./mlflow_models")
+        try:
+            sftp.chdir(experiment_name)
+        except IOError:
+            sftp.mkdir(experiment_name)
+            sftp.chdir(experiment_name)
+
+        model_url = (
+            "/home/ubuntu-kyc/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id + "_model.bin"
+        )
+        model_url_json = {"model_url": model_url}
+        with open("best_model/model_url.json", "w") as json_file:
+            json.dump(model_url_json, json_file)
+        mlflow.log_artifact("best_model/model_url.json")
+        sftp.put("best_model/pytorch_model.bin", special_word + "_" + model_id + "_model.bin")
+
+        print(run_id)
+        print("Model Saved on", model_url)
+    sftp.close()
