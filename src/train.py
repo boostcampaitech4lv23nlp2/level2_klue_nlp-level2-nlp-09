@@ -50,11 +50,9 @@ def train():
 
     # model
     model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
-    print(model.config)
 
     model.parameters
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(device)
 
     model.to(device)
 
