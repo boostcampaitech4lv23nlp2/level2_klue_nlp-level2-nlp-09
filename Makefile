@@ -63,4 +63,4 @@ set-directory:
 
 
 set-dashboard:
-	streamlit run dashboard/app.py
+	streamlit run dashboard/app.py --server.port 8501 --server.fileWatcherType none

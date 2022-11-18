@@ -4,7 +4,7 @@ import pickle as pickle
 import pandas as pd
 import streamlit as st
 
-from .utils import get_filtered_result, test
+from utils import get_filtered_result, test
 
 
 def app(args):
