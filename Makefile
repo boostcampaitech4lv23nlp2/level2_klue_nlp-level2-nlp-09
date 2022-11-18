@@ -3,6 +3,7 @@ quality: set-style-dep check-quality
 style: set-style-dep set-style
 setup: set-precommit set-style-dep set-test-dep set-git set-dev set-dataset set-directory
 test: set-test-dep set-test
+dashboard: set-dashboard
 
 
 ##### basic #####
@@ -59,3 +60,7 @@ set-directory:
 	mkdir -p ./src/logs
 	mkdir -p ./src/best_model
 	mkdir -p ./src/results
+
+
+set-dashboard:
+	streamlit run dashboard/app.py
