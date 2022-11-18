@@ -24,6 +24,7 @@ from model.metric import compute_metrics
 from utils.util import DataTrainingArguments, ModelArguments, get_training_args, label_to_num, set_mlflow_logger
 
 
+
 def train():
     # Using HfArgumentParser we can turn this class into argparse arguments to be able to specify them on the command line.
     # parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
@@ -44,6 +45,7 @@ def train():
     # setting model hyperparameter
     num_labels = len(set(train_label))
     model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
+
 
     # load model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
@@ -66,6 +68,7 @@ def train():
         args=training_args,  # training arguments, defined above
         train_dataset=train_dataset,  # training dataset
         eval_dataset=train_dataset,  # evaluation dataset
+
         compute_metrics=compute_metrics,  # define metrics function
     )
 
