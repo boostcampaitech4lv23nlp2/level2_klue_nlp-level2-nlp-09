@@ -19,7 +19,7 @@ from transformers import (
     TrainingArguments,
 )
 
-from data_loader.load_data import REDataset, load_data
+from data_loader.data_loader import REDataset, data_loader
 from model.metric import compute_metrics
 from utils.util import DataTrainingArguments, ModelArguments, get_training_args, label_to_num, set_mlflow_logger
 
@@ -34,8 +34,8 @@ def train():
     training_args = get_training_args()
 
     # load dataset
-    train_raw_dataset = load_data(data_args.train_file_path)
-    # dev_raw_dataset = load_data(data_args.validation_file_path) # validation용 데이터는 따로 만드셔야 합니다.
+    train_raw_dataset = data_loader(data_args.train_file_path)
+    # dev_raw_dataset = data_loader(data_args.validation_file_path) # validation용 데이터는 따로 만드셔야 합니다.
 
     # label
     train_label = label_to_num(train_raw_dataset["label"].values)
