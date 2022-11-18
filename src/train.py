@@ -1,167 +1,68 @@
-import os
 import pickle as pickle
 
-import numpy as np
-import pandas as pd
-import sklearn
 import torch
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    BertTokenizer,
-    RobertaConfig,
-    RobertaForSequenceClassification,
-    RobertaTokenizer,
-    Trainer,
-    TrainingArguments,
+from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, Trainer
+
+from data_loader import REDataset, data_loader
+from model import compute_metrics
+from utils import (
+    DataTrainingArguments,
+    ModelArguments,
+    get_train_valid_split,
+    get_training_args,
+    label_to_num,
+    save_model_remote,
+    set_mlflow_logger,
+    set_seed,
 )
-
-from load_data import RE_Dataset, load_data, tokenized_dataset
-from mlflow_logger import save_model_remote, set_mlflow_logger
-
-
-def klue_re_micro_f1(preds, labels):
-    """KLUE-RE micro f1 (except no_relation)"""
-    label_list = [
-        "no_relation",
-        "org:top_members/employees",
-        "org:members",
-        "org:product",
-        "per:title",
-        "org:alternate_names",
-        "per:employee_of",
-        "org:place_of_headquarters",
-        "per:product",
-        "org:number_of_employees/members",
-        "per:children",
-        "per:place_of_residence",
-        "per:alternate_names",
-        "per:other_family",
-        "per:colleagues",
-        "per:origin",
-        "per:siblings",
-        "per:spouse",
-        "org:founded",
-        "org:political/religious_affiliation",
-        "org:member_of",
-        "per:parents",
-        "org:dissolved",
-        "per:schools_attended",
-        "per:date_of_death",
-        "per:date_of_birth",
-        "per:place_of_birth",
-        "per:place_of_death",
-        "org:founded_by",
-        "per:religion",
-    ]
-    no_relation_label_idx = label_list.index("no_relation")
-    label_indices = list(range(len(label_list)))
-    label_indices.remove(no_relation_label_idx)
-    return sklearn.metrics.f1_score(labels, preds, average="micro", labels=label_indices) * 100.0
-
-
-def klue_re_auprc(probs, labels):
-    """KLUE-RE AUPRC (with no_relation)"""
-    labels = np.eye(30)[labels]
-
-    score = np.zeros((30,))
-    for c in range(30):
-        targets_c = labels.take([c], axis=1).ravel()
-        preds_c = probs.take([c], axis=1).ravel()
-        precision, recall, _ = sklearn.metrics.precision_recall_curve(targets_c, preds_c)
-        score[c] = sklearn.metrics.auc(recall, precision)
-    return np.average(score) * 100.0
-
-
-def compute_metrics(pred):
-    """validation을 위한 metrics function"""
-    labels = pred.label_ids
-    preds = pred.predictions.argmax(-1)
-    probs = pred.predictions
-
-    # calculate accuracy using sklearn's function
-    f1 = klue_re_micro_f1(preds, labels)
-    auprc = klue_re_auprc(probs, labels)
-    acc = accuracy_score(labels, preds)  # 리더보드 평가에는 포함되지 않습니다.
-
-    return {
-        "micro f1 score": f1,
-        "auprc": auprc,
-        "accuracy": acc,
-    }
-
-
-def label_to_num(label):
-    num_label = []
-    with open("dict_label_to_num.pkl", "rb") as f:
-        dict_label_to_num = pickle.load(f)
-    for v in label:
-        num_label.append(dict_label_to_num[v])
-
-    return num_label
 
 
 def train():
-    # load model and tokenizer
-    # MODEL_NAME = "bert-base-uncased"
-    MODEL_NAME = "klue/bert-base"
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    # Using HfArgumentParser we can turn this class into argparse arguments to be able to specify them on the command line.
+    # parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    # model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
+    model_args, data_args = parser.parse_args_into_dataclasses()
+    training_args = get_training_args()
+
+    set_seed(data_args.seed)
 
     # load dataset
-    train_dataset = load_data("../dataset/train/train_micro.csv")
-    # dev_dataset = load_data("../dataset/train/dev.csv") # validation용 데이터는 따로 만드셔야 합니다.
+    train_raw_dataset = data_loader(data_args.train_file_path)
+    # dev_raw_dataset = data_loader(data_args.validation_file_path) # validation용 데이터는 따로 만드셔야 합니다.
 
-    train_label = label_to_num(train_dataset["label"].values)
-    # dev_label = label_to_num(dev_dataset['label'].values)
+    train_raw_dataset, valid_raw_dataset = get_train_valid_split(train_raw_dataset, valid_size=0.1)
 
-    # tokenizing dataset
-    tokenized_train = tokenized_dataset(train_dataset, tokenizer)
-    # tokenized_dev = tokenized_dataset(dev_dataset, tokenizer)
+    # label
+    train_label = label_to_num(train_raw_dataset["label"].values)
+    valid_label = label_to_num(valid_raw_dataset["label"].values)
 
-    # make dataset for pytorch.
-    RE_train_dataset = RE_Dataset(tokenized_train, train_label)
-    # RE_dev_dataset = RE_Dataset(tokenized_dev, dev_label)
+    # setting model hyperparameter
+    num_labels = len(set(train_label))
+    model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
 
+    # load model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
+
+    # model
+    model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
+
+    model.parameters
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    print(device)
-    # setting model hyperparameter
-    model_config = AutoConfig.from_pretrained(MODEL_NAME)
-    model_config.num_labels = 30
-
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, config=model_config)
-    print(model.config)
-    model.parameters
     model.to(device)
 
-    # 사용한 option 외에도 다양한 option들이 있습니다.
-    # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
-    training_args = TrainingArguments(
-        output_dir="./results",  # output directory
-        save_total_limit=5,  # number of total save model.
-        save_steps=500,  # model saving step.
-        num_train_epochs=1,  # total number of training epochs
-        learning_rate=5e-5,  # learning_rate
-        per_device_train_batch_size=32,  # batch size per device during training
-        per_device_eval_batch_size=32,  # batch size for evaluation
-        warmup_steps=500,  # number of warmup steps for learning rate scheduler
-        weight_decay=0.01,  # strength of weight decay
-        logging_dir="./logs",  # directory for storing logs
-        logging_steps=100,  # log saving step.
-        evaluation_strategy="steps",  # evaluation strategy to adopt during training
-        # `no`: No evaluation during training.
-        # `steps`: Evaluate every `eval_steps`.
-        # `epoch`: Evaluate every end of epoch.
-        eval_steps=500,  # evaluation step.
-        load_best_model_at_end=True,
-    )
+    # Preprocessing the raw_datasets.
+    # make dataset for pytorch.
+    train_dataset = REDataset(train_raw_dataset, tokenizer, train_label)
+    valid_dataset = REDataset(valid_raw_dataset, tokenizer, valid_label)
+
     trainer = Trainer(
         model=model,  # the instantiated 🤗 Transformers model to be trained
         args=training_args,  # training arguments, defined above
-        train_dataset=RE_train_dataset,  # training dataset
-        eval_dataset=RE_train_dataset,  # evaluation dataset
+        train_dataset=train_dataset,  # training dataset
+        eval_dataset=valid_dataset,  # evaluation dataset
         compute_metrics=compute_metrics,  # define metrics function
     )
 
@@ -177,4 +78,6 @@ def main():
 
 
 if __name__ == "__main__":
+    torch.cuda.empty_cache()
+
     main()
