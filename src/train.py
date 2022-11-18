@@ -19,7 +19,7 @@ from transformers import (
 )
 
 from load_data import RE_Dataset, load_data, tokenized_dataset
-from mlflow_logger import set_mlflow_logger
+from mlflow_logger import save_model_remote, set_mlflow_logger
 
 
 def klue_re_micro_f1(preds, labels):
@@ -110,7 +110,7 @@ def train():
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
     # load dataset
-    train_dataset = load_data("../dataset/train/train.csv")
+    train_dataset = load_data("../dataset/train/train_micro.csv")
     # dev_dataset = load_data("../dataset/train/dev.csv") # validation용 데이터는 따로 만드셔야 합니다.
 
     train_label = label_to_num(train_dataset["label"].values)
@@ -168,10 +168,11 @@ def train():
     # train model
     trainer.train()
     model.save_pretrained("./best_model")
+    save_model_remote("Practice", "kyc3492")
 
 
 def main():
-    set_mlflow_logger("", "", 0)
+    set_mlflow_logger("", "Practice", 0)
     train()
 
 
