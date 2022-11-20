@@ -87,6 +87,28 @@ def save_model_remote(experiment_name, special_word):
         print("No input for experiment_name... import Default")
         experiment_name = config_data["experiment_name"]
 
+    progressDict = {}
+    progressEveryPercent = 10
+
+    for i in range(0, 101):
+        if i % progressEveryPercent == 0:
+            progressDict[str(i)] = ""
+
+    def printProgressDecimal(x, y):
+        """A callback function for show sftp progress log.
+           Source: https://stackoverflow.com/questions/24278146/how-do-i-monitor-the-progress-of-a-file-transfer-through-pysftp
+
+        Args:
+            x (String): Represent for to-do-data size(e.g. remained file size of pulling of getting)
+            y (String): Represent for total file size
+        """
+        if (
+            int(100 * (int(x) / int(y))) % progressEveryPercent == 0
+            and progressDict[str(int(100 * (int(x) / int(y))))] == ""
+        ):
+            print("{}% ({} Transfered(B)/ {} Total File Size(B))".format(str("%.2f" % (100 * (int(x) / int(y)))), x, y))
+            progressDict[str(int(100 * (int(x) / int(y))))] = "1"
+
     model_id = uuid.uuid4().hex
 
     with open("./config/sftp_config.yml") as f:
@@ -114,7 +136,11 @@ def save_model_remote(experiment_name, special_word):
         with open("best_model/model_url.json", "w") as json_file:
             json.dump(model_url_json, json_file)
         mlflow.log_artifact("best_model/model_url.json")
-        sftp.put("best_model/pytorch_model.bin", special_word + "_" + model_id + "_model.bin")
+        sftp.put(
+            localpath="best_model/pytorch_model.bin",
+            remotepath=special_word + "_" + model_id + "_model.bin",
+            callback=lambda x, y: printProgressDecimal(x, y),
+        )
 
         print("Model Saved on", model_url)
     sftp.close()
