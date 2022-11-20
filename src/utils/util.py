@@ -130,18 +130,25 @@ def save_model_remote(experiment_name, special_word):
         except IOError:
             sftp.mkdir(experiment_name)
             sftp.chdir(experiment_name)
+        sftp.mkdir(special_word + "_" + model_id)
+        sftp.chdir(special_word + "_" + model_id)
 
-        model_url = "/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id + "_model.bin"
+        model_url = "/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id
         model_url_json = {"model_url": model_url}
+
         with open("best_model/model_url.json", "w") as json_file:
             json.dump(model_url_json, json_file)
         mlflow.log_artifact("best_model/model_url.json")
         sftp.put(
             localpath="best_model/pytorch_model.bin",
-            remotepath=special_word + "_" + model_id + "_model.bin",
+            remotepath="pytorch_model.bin",
             callback=lambda x, y: printProgressDecimal(x, y),
         )
-
+        sftp.put(
+            localpath="best_model/config.json",
+            remotepath="config.json",
+            callback=lambda x, y: printProgressDecimal(x, y),
+        )
         print("Model Saved on", model_url)
     sftp.close()
 
