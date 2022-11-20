@@ -1,6 +1,6 @@
-import json
 import os
-import pickle as pickle
+import pickle
+import sys
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,13 @@ import torch.nn.functional as F
 import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, Trainer
+
+PROJECT_ROOT_DIR = os.path.dirname((os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+sys.path.append(PROJECT_ROOT_DIR)
+from src.data_loader import REDataset, data_loader
+from src.model import compute_metrics
+from src.utils import label_to_num, set_seed
 
 DICT_NUM_TO_LABEL_PATH = "dashboard/dict_num_to_label.pkl"
 with open(DICT_NUM_TO_LABEL_PATH, "rb") as f:
@@ -47,92 +53,12 @@ def inference(model, tokenized_sent, device):
     )
 
 
-def tokenized_dataset(dataset, tokenizer):
-    """tokenizer에 따라 sentence를 tokenizing 합니다."""
-    concat_entity = []
-    for e01, e02 in zip(dataset["subject_entity"], dataset["object_entity"]):
-        temp = ""
-        temp = e01 + "[SEP]" + e02
-        concat_entity.append(temp)
-    tokenized_sentences = tokenizer(
-        concat_entity,
-        list(dataset["sentence"]),
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=256,
-        add_special_tokens=True,
-    )
-    return tokenized_sentences
-
-
-def preprocessing_dataset(dataset):
-    """처음 불러온 csv 파일을 원하는 형태의 DataFrame으로 변경 시켜줍니다."""
-    subject_entity = []
-    object_entity = []
-    for i, j in zip(dataset["subject_entity"], dataset["object_entity"]):
-        i = i[1:-1].split(",")[0].split(":")[1]
-        j = j[1:-1].split(",")[0].split(":")[1]
-
-        subject_entity.append(i)
-        object_entity.append(j)
-    out_dataset = pd.DataFrame(
-        {
-            "id": dataset["id"],
-            "sentence": dataset["sentence"],
-            "subject_entity": subject_entity,
-            "object_entity": object_entity,
-            "label": dataset["label"],
-        }
-    )
-    return out_dataset
-
-
-def load_data(dataset_dir):
-    """csv 파일을 경로에 맡게 불러 옵니다."""
-    pd_dataset = pd.read_csv(dataset_dir)
-    dataset = preprocessing_dataset(pd_dataset)
-
-    return dataset
-
-
-def load_test_dataset(dataset_dir, tokenizer):
-    """
-    test dataset을 불러온 후,
-    tokenizing 합니다.
-    """
-    test_dataset = load_data(dataset_dir)
-    test_label = [100 for i in range(len(test_dataset))]
-    # tokenizing dataset
-    tokenized_test = tokenized_dataset(test_dataset, tokenizer)
-    return test_dataset["id"], tokenized_test, test_label
-
-
 def num_to_label(label):
     """
     숫자로 되어 있던 class를 원본 문자열 라벨로 변환 합니다.
     """
-    origin_label = []
-    for v in label:
-        origin_label.append(dict_num_to_label[v])
 
-    return origin_label
-
-
-class RE_Dataset(torch.utils.data.Dataset):
-    """Dataset 구성을 위한 class."""
-
-    def __init__(self, pair_dataset, labels):
-        self.pair_dataset = pair_dataset
-        self.labels = labels
-
-    def __getitem__(self, idx):
-        item = {key: val[idx].clone().detach() for key, val in self.pair_dataset.items()}
-        item["labels"] = torch.tensor(self.labels[idx])
-        return item
-
-    def __len__(self):
-        return len(self.labels)
+    return dict_num_to_label[label]
 
 
 def get_topn_probs(probs, n=3):
@@ -161,8 +87,9 @@ def get_entity_word(row):
     Returns:
         _type_: _description_
     """
-    row = row.replace("'", '"')
-    return json.loads(row)["word"]
+    entity = row[1:-1].split(",")[0].split(":")[1]
+    entity = entity.replace("'", "").strip()
+    return entity
 
 
 def get_filtered_result(new_df, test_df):
@@ -180,6 +107,7 @@ def get_filtered_result(new_df, test_df):
     new_df["subject"] = test_df["subject_entity"].apply(get_entity_word)
     new_df["object"] = test_df["object_entity"].apply(get_entity_word)
     new_df["probs"] = new_df["probs"].apply(get_topn_probs)
+    new_df["pred_label"] = new_df["pred_label"].apply(num_to_label)
     new_df = new_df.loc[new_df["pred_label"] != new_df["answer"]]
     new_df = new_df[["sentence", "subject", "object", "pred_label", "answer", "probs"]]
     return new_df
@@ -192,23 +120,32 @@ def test(args):
         _type_: pd.DataFrame
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    set_seed(args.seed)
 
+    valid_raw_dataset = data_loader(args.valid_file_path)
+    valid_label = label_to_num(valid_raw_dataset["label"].values)
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     model = AutoModelForSequenceClassification.from_pretrained(args.model_dir)
     model.to(device)
 
-    test_id, test_dataset, test_label = load_test_dataset(args.valid_data_path, tokenizer)
-    Re_test_dataset = RE_Dataset(test_dataset, test_label)
+    valid_dataset = REDataset(valid_raw_dataset, tokenizer, valid_label)
 
-    pred_answer, output_prob = inference(model, Re_test_dataset, device)
-    pred_answer = num_to_label(pred_answer)
-    output = pd.DataFrame(
+    trainer = Trainer(
+        model=model,  # the instantiated 🤗 Transformers model to be trained
+        eval_dataset=valid_dataset,  # evaluation dataset
+        compute_metrics=compute_metrics,  # define metrics function
+    )
+
+    metrics = trainer.evaluate(eval_dataset=valid_dataset)
+    pred_answer, output_prob = inference(model, valid_dataset, device)
+    outputs = pd.DataFrame(
         {
             "pred_label": pred_answer,
             "probs": output_prob,
         }
     )
-    return output
+    return outputs, metrics
 
 
 # 이하 후다닥 만든 데모용 SFTP 모듈들. 다듬을 예정.
