@@ -11,7 +11,7 @@ from transformers import TrainingArguments
 
 def label_to_num(label):
     num_label = []
-    with open("dict_label_to_num.pkl", "rb") as f:
+    with open(os.path.join(os.path.dirname(__file__), "dict_label_to_num.pkl"), "rb") as f:
         dict_label_to_num = pickle.load(f)
     for v in label:
         num_label.append(dict_label_to_num[v])

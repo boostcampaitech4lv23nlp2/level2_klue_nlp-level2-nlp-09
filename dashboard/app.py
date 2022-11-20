@@ -7,19 +7,30 @@ import streamlit as st
 from utils import get_filtered_result, test
 
 
+@st.experimental_memo
+def convert_df(df):
+    return df.to_csv(index=False).encode("utf-8")
+
+
 def app(args):
     """Run streamlit app"""
-    test_df = pd.read_csv(args.valid_data_path)
+    valid_data_df = pd.read_csv(args.valid_file_path)
 
     st.set_page_config(page_icon="❄️", page_title="Into the RE", layout="wide")
 
     st.title("Into the Re")
 
-    result_df = test(args)
-    filtered_df = get_filtered_result(result_df, test_df)
+    outputs, metrics = test(args)
+    filtered_df = get_filtered_result(outputs, valid_data_df)
+    csv = convert_df(filtered_df)
 
     st.dataframe(filtered_df)
-    st.text(f"전체 {len(test_df)} 중 {len(filtered_df)}개를 틀렸습니다.")
+
+    st.download_button("Download", csv, "result.csv", "text/csv")
+    st.text(f"전체 {len(valid_data_df)} 중 {len(filtered_df)}개를 틀렸습니다.")
+    st.text(
+        f"micro_f1_score: {metrics['eval_micro_f1_score']} eval_auprc: {metrics['eval_auprc']} eval_accuracy: {metrics['eval_accuracy']}"
+    )
     st.text("실제 정답 분포")
     st.bar_chart(filtered_df["answer"].value_counts())
     st.text("예측 라벨 분포")
@@ -35,11 +46,15 @@ parser.add_argument(
     type=str,
 )
 parser.add_argument(
-    "--valid_data_path",
-    default="dataset/train/dev.csv",
+    "--valid_file_path",
+    default="dataset/train/valid.csv",
     type=str,
 )
-
+parser.add_argument(
+    "--seed",
+    default=404,
+    type=int,
+)
 
 args = parser.parse_args()
 
