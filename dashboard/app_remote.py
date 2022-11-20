@@ -4,7 +4,7 @@ import pickle as pickle
 import pandas as pd
 import streamlit as st
 
-from utils import connect_remote, download_model, get_filtered_result, test
+from .utils import connect_remote, download_model, get_filtered_result, test
 
 st.set_page_config(page_icon="❄️", page_title="Into the RE (Remote.ver)", layout="wide")
 st.title("Into the Re")
