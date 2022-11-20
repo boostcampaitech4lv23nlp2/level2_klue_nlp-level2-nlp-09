@@ -109,9 +109,7 @@ def save_model_remote(experiment_name, special_word):
             sftp.mkdir(experiment_name)
             sftp.chdir(experiment_name)
 
-        model_url = (
-            "/home/ubuntu-kyc/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id + "_model.bin"
-        )
+        model_url = "/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id + "_model.bin"
         model_url_json = {"model_url": model_url}
         with open("best_model/model_url.json", "w") as json_file:
             json.dump(model_url_json, json_file)
