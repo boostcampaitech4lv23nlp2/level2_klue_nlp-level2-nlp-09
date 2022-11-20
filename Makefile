@@ -9,6 +9,7 @@ dashboard: set-dashboard
 ##### basic #####
 set-git:
 	git config --local commit.template .gitmessage
+	git config --global core.editor "code --wait"
 
 set-style-dep:
 	pip3 install isort==5.10.1 black==22.3.0 flake8==4.0.1
