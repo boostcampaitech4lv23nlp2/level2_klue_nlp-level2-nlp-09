@@ -1,52 +1,44 @@
-# Python Template
+# Relation Extraction Task
 
-Template repository for Python project
+This is 🚀 Team NLP-09's repository for the 2nd boostcamp AI Tech competition (2022.11.14 ~ 2022.12.01 19:00).
 
-## 🚀 Features
-
-### Code Quality
-
-- black
-- isort
-- flake8
-- editorconfig
-
-### Github Actions
-
-- [release-drafter](https://github.com/release-drafter/release-drafter)
-- Check code quality when PR (`black`, `isort`, `flake8`)
-
-### Other
-
-- Commit template
-- Issue, PR Template
-- Add dummy test code
-- Auto-close stale issue
+The competition is on sentence-level Relation Extraction, RE.
 
 ## 📄 Guideline
 
 ### 1. Setup
-
-- precommit, style, pytest, gitmessage, requirements
-
 ```bash
 make setup
 ```
 
-### 2. Writes your own code! ✏️
+### 2. Code formatting & Check liint
+```bash
+make style
+```
 
-Don't forget to update the `README`!
-
-## ⬆️ Contributing
-
-### 1. Test
-
+### 3. Code testing
 ```bash
 make test
 ```
 
-### 2. Execute code formatting & Check lint
-
+### 4. Run Train
 ```bash
-make style
+cd src
+python train.py
 ```
+You can see more option to train in `src/utils/util`.
+
+### 5. Run Dashboard
+```bash
+make dashboard
+```
+Then you can acess dashboard by your web browser.
+(If you use **VScode**, check [issue](https://github.com/boostcampaitech4lv23nlp2/level2_klue_nlp-level2-nlp-09/issues/15))
+
+### 6. Run Inference
+```bash
+cd src
+python inference.py
+```
+You can see more option to inference in `src/utils/util`.
+
