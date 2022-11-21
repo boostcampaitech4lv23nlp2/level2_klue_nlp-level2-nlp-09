@@ -1,4 +1,22 @@
-from utils.extraction import extraction
+from typing import Tuple
+
+
+def extraction(subject: str) -> Tuple[int, int, str, str]:
+    """
+    Args:
+        subject (str): subject or object
+
+    Returns:
+        Tuple[int,int,str,str]: return subject object idx or subject object
+    """
+    subject_entity = subject[:-1].split(",")[-1].split(":")[1]
+    subject_length = len(subject.split(","))
+    sub_start_idx = int(subject.split(",", subject_length - 3)[subject_length - 3].split(",")[0].split(":")[1])
+    sub_end_idx = int(subject.split(",", subject_length - 3)[subject_length - 3].split(",")[1].split(":")[1])
+    subject = "".join(subject.split(",", subject_length - 3)[: subject_length - 3]).split(":")[1]
+    subject_entity = subject_entity.replace("'", "").strip()
+
+    return sub_start_idx, sub_end_idx, subject, subject_entity
 
 
 def entity_representation(subject: str, object: str, sentence: str, method: str = None) -> str:
@@ -22,9 +40,8 @@ def entity_representation(subject: str, object: str, sentence: str, method: str 
         "typed_entity_marker_punct",
     ], "입력하신 method는 없습니다."
 
-    sub_start_idx, sub_end_idx, obj_start_idx, obj_end_idx, subject, object, subject_entity, object_entity = extraction(
-        subject, object
-    )
+    sub_start_idx, sub_end_idx, subject, subject_entity = extraction(subject)
+    obj_start_idx, obj_end_idx, object, object_entity = extraction(object)
 
     # entity representation
 

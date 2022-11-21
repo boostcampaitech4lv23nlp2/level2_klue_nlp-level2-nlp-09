@@ -29,7 +29,6 @@ class REDataset(torch.utils.data.Dataset):
             concat_entity.append(temp)
         tokenized_sentences = tokenizer(
             concat_entity,
-            list(dataset["sentence"]),
             return_tensors="pt",
             padding=True,
             truncation=True,
