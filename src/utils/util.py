@@ -157,17 +157,17 @@ def get_training_args(
     output_dir="./results",
     save_total_limit=5,
     save_strategy="epoch",
-    num_train_epochs=1,
+    num_train_epochs=20,
     learning_rate=5e-5,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
-    warmup_steps=2742,
+    per_device_train_batch_size=128,
+    per_device_eval_batch_size=128,
+    warmup_steps=690,
     weight_decay=0.01,
     logging_dir="./logs",
     logging_steps=100,
     evaluation_strategy="epoch",
-    eval_steps=500,
     load_best_model_at_end=True,
+    metric_for_best_model="eval_micro_f1_score",
 ):
     training_args = TrainingArguments(
         output_dir=output_dir,  # output directory
@@ -185,8 +185,8 @@ def get_training_args(
         # `no`: No evaluation during training.
         # `steps`: Evaluate every `eval_steps`.
         # `epoch`: Evaluate every end of epoch.
-        eval_steps=eval_steps,  # evaluation step.
         load_best_model_at_end=load_best_model_at_end,
+        metric_for_best_model=metric_for_best_model
         # 사용한 option 외에도 다양한 option들이 있습니다.
         # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
     )
@@ -214,7 +214,7 @@ class DataTrainingArguments:
     )
     seed: int = field(default=404)
     max_seq_length: int = field(
-        default=128,
+        default=256,
         metadata={
             "help": (
                 "The maximum total input sequence length after tokenization. Sequences longer "
@@ -277,7 +277,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="klue/bert-base",
+        default="klue/roberta-small",
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"},
     )
     config_name: Optional[str] = field(
