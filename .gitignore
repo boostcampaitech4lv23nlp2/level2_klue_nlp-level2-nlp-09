@@ -144,3 +144,4 @@ results/
 ._train
 best_model/
 tmp_trainer/
+download_model/
