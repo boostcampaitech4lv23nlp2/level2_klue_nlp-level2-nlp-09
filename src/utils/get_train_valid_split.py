@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import json
+import os
 import random
 
 import pandas as pd
@@ -14,7 +15,7 @@ def get_train_valid_split(train_dataset: pd.DataFrame(), valid_size: float = 0.1
     """
 
     # load train label distribution
-    with open("./utils/distribution.json", "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), "distribution.json"), "r") as f:
         distribution = json.load(f)
 
     # valid data length

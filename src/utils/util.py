@@ -14,7 +14,7 @@ from transformers import TrainingArguments
 
 def label_to_num(label):
     num_label = []
-    with open("dict_label_to_num.pkl", "rb") as f:
+    with open(os.path.join(os.path.dirname(__file__), "dict_label_to_num.pkl"), "rb") as f:
         dict_label_to_num = pickle.load(f)
     for v in label:
         num_label.append(dict_label_to_num[v])
@@ -125,23 +125,23 @@ def save_model_remote(experiment_name, special_word):
 def get_training_args(
     output_dir="./results",
     save_total_limit=5,
-    save_steps=500,
+    save_strategy="epoch",
     num_train_epochs=1,
     learning_rate=5e-5,
     per_device_train_batch_size=32,
     per_device_eval_batch_size=32,
-    warmup_steps=500,
+    warmup_steps=2742,
     weight_decay=0.01,
     logging_dir="./logs",
     logging_steps=100,
-    evaluation_strategy="steps",
+    evaluation_strategy="epoch",
     eval_steps=500,
     load_best_model_at_end=True,
 ):
     training_args = TrainingArguments(
         output_dir=output_dir,  # output directory
         save_total_limit=save_total_limit,  # number of total save model.
-        save_steps=save_steps,  # model saving step.
+        save_strategy=save_strategy,
         num_train_epochs=num_train_epochs,  # total number of training epochs
         learning_rate=learning_rate,  # learning_rate
         per_device_train_batch_size=per_device_train_batch_size,  # batch size per device during training
