@@ -33,6 +33,7 @@ def train():
     # dev_raw_dataset = data_loader(data_args.validation_file_path) # validation용 데이터는 따로 만드셔야 합니다.
 
     train_raw_dataset, valid_raw_dataset = get_train_valid_split(train_raw_dataset, valid_size=0.1)
+    valid_raw_dataset.to_csv("../dataset/train/valid.csv", index=False)
 
     # label
     train_label = label_to_num(train_raw_dataset["label"].values)
