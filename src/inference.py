@@ -5,10 +5,11 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
-from load_data import RE_Dataset, load_data, tokenized_dataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, Trainer, TrainingArguments
+
+from data_loader.data_loader import REDataset, data_loader
 
 
 def inference(model, tokenized_sent, device):
@@ -51,16 +52,16 @@ def num_to_label(label):
     return origin_label
 
 
-def load_test_dataset(dataset_dir, tokenizer):
+def load_test_dataset(dataset_dir):
     """
     test dataset을 불러온 후,
     tokenizing 합니다.
     """
-    test_dataset = load_data(dataset_dir)
-    test_label = list(map(int, test_dataset["label"].values))
-    # tokenizing dataset
-    tokenized_test = tokenized_dataset(test_dataset, tokenizer)
-    return test_dataset["id"], tokenized_test, test_label
+    test_raw_dataset = data_loader(dataset_dir)
+    test_label = list(map(int, test_raw_dataset["label"].values))
+    # # tokenizing dataset
+    # tokenized_test = tokenized_dataset(test_raw_dataset, tokenizer)
+    return test_raw_dataset["id"], test_raw_dataset, test_label
 
 
 def main(args):
@@ -80,8 +81,8 @@ def main(args):
 
     # load test datset
     test_dataset_dir = "../dataset/test/test_data.csv"
-    test_id, test_dataset, test_label = load_test_dataset(test_dataset_dir, tokenizer)
-    Re_test_dataset = RE_Dataset(test_dataset, test_label)
+    test_id, test_raw_dataset, test_label = load_test_dataset(test_dataset_dir)
+    Re_test_dataset = REDataset(test_raw_dataset, tokenizer, test_label)
 
     # predict answer
     pred_answer, output_prob = inference(model, Re_test_dataset, device)  # model에서 class 추론
