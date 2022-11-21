@@ -24,9 +24,8 @@ class REDataset(torch.utils.data.Dataset):
     def tokenized_dataset(self, dataset, tokenizer):
         """tokenizer에 따라 sentence를 tokenizing 합니다."""
         concat_entity = []
-        for e01, e02 in zip(dataset["subject_entity"], dataset["object_entity"]):
-            temp = ""
-            temp = e01 + "[SEP]" + e02
+        for e01, e02, sentence in zip(dataset["subject_entity"], dataset["object_entity"], dataset["sentence"]):
+            temp = entity_representation(e01, e02, sentence, method=None)
             concat_entity.append(temp)
         tokenized_sentences = tokenizer(
             concat_entity,
