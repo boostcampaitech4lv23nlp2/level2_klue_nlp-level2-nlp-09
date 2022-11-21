@@ -67,4 +67,5 @@ set-dashboard:
 	streamlit run dashboard/app.py --server.port 8501 --server.fileWatcherType none
 
 set-dashboard-remote:
+	mkdir -p ./dashboard/download_model
 	streamlit run dashboard/app_remote.py --server.port 8501 --server.fileWatcherType none
