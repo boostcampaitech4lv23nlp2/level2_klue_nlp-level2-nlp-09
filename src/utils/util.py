@@ -1,10 +1,13 @@
 from typing import Optional
 
+import json
 import os
 import pickle as pickle
+import uuid
 from dataclasses import dataclass, field
 
 import mlflow.pytorch
+import pysftp
 import yaml
 from transformers import TrainingArguments
 
@@ -68,26 +71,108 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
         print("MLflow setup job finished")
 
 
+def save_model_remote(experiment_name, special_word):
+    """A function saves best model on remote storage.
+
+    Args:
+        experiment_name (String): A String Data that informs experiment name at mlflow.
+                                  If a folder which name is this doesn't exist at remote, it creates one using this name.
+        special_word (String): A String Data that user can customize the name of the model.
+                               User can add anything like hyper_parameter setting, user name, etc.
+    """
+    with open("./config/mlflow_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+        print(config_data)
+    if experiment_name == "":
+        print("No input for experiment_name... import Default")
+        experiment_name = config_data["experiment_name"]
+
+    progressDict = {}
+    progressEveryPercent = 10
+
+    for i in range(0, 101):
+        if i % progressEveryPercent == 0:
+            progressDict[str(i)] = ""
+
+    def printProgressDecimal(x, y):
+        """A callback function for show sftp progress log.
+           Source: https://stackoverflow.com/questions/24278146/how-do-i-monitor-the-progress-of-a-file-transfer-through-pysftp
+
+        Args:
+            x (String): Represent for to-do-data size(e.g. remained file size of pulling of getting)
+            y (String): Represent for total file size
+        """
+        if (
+            int(100 * (int(x) / int(y))) % progressEveryPercent == 0
+            and progressDict[str(int(100 * (int(x) / int(y))))] == ""
+        ):
+            print("{}% ({} Transfered(B)/ {} Total File Size(B))".format(str("%.2f" % (100 * (int(x) / int(y)))), x, y))
+            progressDict[str(int(100 * (int(x) / int(y))))] = "1"
+
+    model_id = uuid.uuid4().hex
+
+    with open("./config/sftp_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+    host = config_data["host"]
+    port = config_data["port"]
+    username = config_data["username"]
+    password = config_data["password"]
+
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+
+    mlflow.log_artifact("best_model/config.json")
+    with pysftp.Connection(host, port=port, username=username, password=password, cnopts=cnopts) as sftp:
+        print("connected!!")
+        sftp.chdir("./mlflow_models")
+        try:
+            sftp.chdir(experiment_name)
+        except IOError:
+            sftp.mkdir(experiment_name)
+            sftp.chdir(experiment_name)
+        sftp.mkdir(special_word + "_" + model_id)
+        sftp.chdir(special_word + "_" + model_id)
+
+        model_url = "/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id
+        model_url_json = {"model_url": model_url}
+
+        with open("best_model/model_url.json", "w") as json_file:
+            json.dump(model_url_json, json_file)
+        mlflow.log_artifact("best_model/model_url.json")
+        sftp.put(
+            localpath="best_model/pytorch_model.bin",
+            remotepath="pytorch_model.bin",
+            callback=lambda x, y: printProgressDecimal(x, y),
+        )
+        sftp.put(
+            localpath="best_model/config.json",
+            remotepath="config.json",
+            callback=lambda x, y: printProgressDecimal(x, y),
+        )
+        print("Model Saved on", model_url)
+    sftp.close()
+
+
 def get_training_args(
     output_dir="./results",
     save_total_limit=5,
-    save_steps=500,
-    num_train_epochs=1,
+    save_strategy="epoch",
+    num_train_epochs=20,
     learning_rate=5e-5,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
-    warmup_steps=500,
+    per_device_train_batch_size=128,
+    per_device_eval_batch_size=128,
+    warmup_steps=690,
     weight_decay=0.01,
     logging_dir="./logs",
     logging_steps=100,
-    evaluation_strategy="steps",
-    eval_steps=500,
+    evaluation_strategy="epoch",
     load_best_model_at_end=True,
+    metric_for_best_model="eval_micro_f1_score",
 ):
     training_args = TrainingArguments(
         output_dir=output_dir,  # output directory
         save_total_limit=save_total_limit,  # number of total save model.
-        save_steps=save_steps,  # model saving step.
+        save_strategy=save_strategy,
         num_train_epochs=num_train_epochs,  # total number of training epochs
         learning_rate=learning_rate,  # learning_rate
         per_device_train_batch_size=per_device_train_batch_size,  # batch size per device during training
@@ -100,8 +185,8 @@ def get_training_args(
         # `no`: No evaluation during training.
         # `steps`: Evaluate every `eval_steps`.
         # `epoch`: Evaluate every end of epoch.
-        eval_steps=eval_steps,  # evaluation step.
         load_best_model_at_end=load_best_model_at_end,
+        metric_for_best_model=metric_for_best_model
         # 사용한 option 외에도 다양한 option들이 있습니다.
         # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
     )
@@ -129,7 +214,7 @@ class DataTrainingArguments:
     )
     seed: int = field(default=404)
     max_seq_length: int = field(
-        default=128,
+        default=256,
         metadata={
             "help": (
                 "The maximum total input sequence length after tokenization. Sequences longer "
@@ -192,7 +277,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="klue/bert-base",
+        default="klue/roberta-small",
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"},
     )
     config_name: Optional[str] = field(

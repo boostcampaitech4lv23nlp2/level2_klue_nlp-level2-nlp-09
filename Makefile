@@ -4,11 +4,13 @@ style: set-style-dep set-style
 setup: set-precommit set-style-dep set-test-dep set-git set-dev set-dataset set-directory
 test: set-test-dep set-test
 dashboard: set-dashboard
+dashboard-remote: set-dashboard-remote
 
 
 ##### basic #####
 set-git:
 	git config --local commit.template .gitmessage
+	git config --local core.editor "code --wait"
 
 set-style-dep:
 	pip3 install isort==5.10.1 black==22.3.0 flake8==4.0.1
@@ -64,3 +66,7 @@ set-directory:
 
 set-dashboard:
 	streamlit run dashboard/app.py --server.port 8501 --server.fileWatcherType none
+
+set-dashboard-remote:
+	mkdir -p ./dashboard/download_model
+	streamlit run dashboard/app_remote.py --server.port 8501 --server.fileWatcherType none

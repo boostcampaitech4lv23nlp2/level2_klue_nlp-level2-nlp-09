@@ -134,6 +134,7 @@ dmypy.json
 .DS_Store
 test.ipynb
 mlflow_config.yml
+sftp_config.yml
 logs/
 mlruns/
 *.csv
@@ -143,3 +144,4 @@ results/
 ._train
 best_model/
 tmp_trainer/
+download_model/
