@@ -39,7 +39,6 @@ def app(args):
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--model_name", default="klue/bert-base", type=str)
 parser.add_argument(
     "--model_dir",
     default="dashboard/download_model",

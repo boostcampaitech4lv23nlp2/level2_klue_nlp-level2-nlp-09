@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 import sys
@@ -124,8 +125,10 @@ def test(args):
 
     valid_raw_dataset = data_loader(args.valid_file_path)
     valid_label = label_to_num(valid_raw_dataset["label"].values)
+    with open(os.path.join(args.model_dir, "config.json")) as f:
+        model_name = json.load(f)["_name_or_path"]
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(args.model_dir)
     model.to(device)
 
