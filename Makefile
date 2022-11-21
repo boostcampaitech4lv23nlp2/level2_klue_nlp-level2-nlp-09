@@ -4,6 +4,7 @@ style: set-style-dep set-style
 setup: set-precommit set-style-dep set-test-dep set-git set-dev set-dataset set-directory
 test: set-test-dep set-test
 dashboard: set-dashboard
+dashboard-remote: set-dashboard-remote
 
 
 ##### basic #####
@@ -64,3 +65,6 @@ set-directory:
 
 set-dashboard:
 	streamlit run dashboard/app.py --server.port 8501 --server.fileWatcherType none
+
+set-dashboard-remote:
+	streamlit run dashboard/app_remote.py --server.port 8501 --server.fileWatcherType none
