@@ -1,10 +1,13 @@
 from typing import Optional
 
+import json
 import os
 import pickle as pickle
+import uuid
 from dataclasses import dataclass, field
 
 import mlflow.pytorch
+import pysftp
 import yaml
 from transformers import TrainingArguments
 
@@ -66,6 +69,88 @@ def set_mlflow_logger(tracking_uri, experiment_name, logging_step):
         )
     finally:
         print("MLflow setup job finished")
+
+
+def save_model_remote(experiment_name, special_word):
+    """A function saves best model on remote storage.
+
+    Args:
+        experiment_name (String): A String Data that informs experiment name at mlflow.
+                                  If a folder which name is this doesn't exist at remote, it creates one using this name.
+        special_word (String): A String Data that user can customize the name of the model.
+                               User can add anything like hyper_parameter setting, user name, etc.
+    """
+    with open("./config/mlflow_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+        print(config_data)
+    if experiment_name == "":
+        print("No input for experiment_name... import Default")
+        experiment_name = config_data["experiment_name"]
+
+    progressDict = {}
+    progressEveryPercent = 10
+
+    for i in range(0, 101):
+        if i % progressEveryPercent == 0:
+            progressDict[str(i)] = ""
+
+    def printProgressDecimal(x, y):
+        """A callback function for show sftp progress log.
+           Source: https://stackoverflow.com/questions/24278146/how-do-i-monitor-the-progress-of-a-file-transfer-through-pysftp
+
+        Args:
+            x (String): Represent for to-do-data size(e.g. remained file size of pulling of getting)
+            y (String): Represent for total file size
+        """
+        if (
+            int(100 * (int(x) / int(y))) % progressEveryPercent == 0
+            and progressDict[str(int(100 * (int(x) / int(y))))] == ""
+        ):
+            print("{}% ({} Transfered(B)/ {} Total File Size(B))".format(str("%.2f" % (100 * (int(x) / int(y)))), x, y))
+            progressDict[str(int(100 * (int(x) / int(y))))] = "1"
+
+    model_id = uuid.uuid4().hex
+
+    with open("./config/sftp_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+    host = config_data["host"]
+    port = config_data["port"]
+    username = config_data["username"]
+    password = config_data["password"]
+
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+
+    mlflow.log_artifact("best_model/config.json")
+    with pysftp.Connection(host, port=port, username=username, password=password, cnopts=cnopts) as sftp:
+        print("connected!!")
+        sftp.chdir("./mlflow_models")
+        try:
+            sftp.chdir(experiment_name)
+        except IOError:
+            sftp.mkdir(experiment_name)
+            sftp.chdir(experiment_name)
+        sftp.mkdir(special_word + "_" + model_id)
+        sftp.chdir(special_word + "_" + model_id)
+
+        model_url = "/mlflow_models/" + experiment_name + "/" + special_word + "_" + model_id
+        model_url_json = {"model_url": model_url}
+
+        with open("best_model/model_url.json", "w") as json_file:
+            json.dump(model_url_json, json_file)
+        mlflow.log_artifact("best_model/model_url.json")
+        sftp.put(
+            localpath="best_model/pytorch_model.bin",
+            remotepath="pytorch_model.bin",
+            callback=lambda x, y: printProgressDecimal(x, y),
+        )
+        sftp.put(
+            localpath="best_model/config.json",
+            remotepath="config.json",
+            callback=lambda x, y: printProgressDecimal(x, y),
+        )
+        print("Model Saved on", model_url)
+    sftp.close()
 
 
 def get_training_args(

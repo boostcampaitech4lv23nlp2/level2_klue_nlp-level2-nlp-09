@@ -4,8 +4,10 @@ import sys
 
 import numpy as np
 import pandas as pd
+import pysftp
 import torch
 import torch.nn.functional as F
+import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, Trainer
@@ -144,3 +146,79 @@ def test(args):
         }
     )
     return outputs, metrics
+
+
+# 이하 후다닥 만든 데모용 SFTP 모듈들. 다듬을 예정.
+def connect_remote():
+    model_list = []
+
+    with open("src/config/sftp_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+        host = config_data["host"]
+        port = config_data["port"]
+        username = config_data["username"]
+        password = config_data["password"]
+
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+
+        with pysftp.Connection(host, port=port, username=username, password=password, cnopts=cnopts) as sftp:
+            print("connected!!")
+            files = sftp.listdir_attr("/mlflow_models/Boostcamp KLUE Contest/")
+            # print(files)
+            for f in files:
+                print(f.filename)
+                model_list.append(f.filename)
+    sftp.close()
+
+    return model_list
+
+
+def download_model(model_name):
+    progressDict = {}
+    progressEveryPercent = 10
+
+    for i in range(0, 101):
+        if i % progressEveryPercent == 0:
+            progressDict[str(i)] = ""
+
+    def printProgressDecimal(x, y):
+        """A callback function for show sftp progress log.
+           Source: https://stackoverflow.com/questions/24278146/how-do-i-monitor-the-progress-of-a-file-transfer-through-pysftp
+
+        Args:
+            x (String): Represent for to-do-data size(e.g. remained file size of pulling of getting)
+            y (String): Represent for total file size
+        """
+        if (
+            int(100 * (int(x) / int(y))) % progressEveryPercent == 0
+            and progressDict[str(int(100 * (int(x) / int(y))))] == ""
+        ):
+            print("{}% ({} Transfered(B)/ {} Total File Size(B))".format(str("%.2f" % (100 * (int(x) / int(y)))), x, y))
+            progressDict[str(int(100 * (int(x) / int(y))))] = "1"
+
+    with open("src/config/sftp_config.yml") as f:
+        config_data = yaml.load(f, Loader=yaml.FullLoader)
+        host = config_data["host"]
+        port = config_data["port"]
+        username = config_data["username"]
+        password = config_data["password"]
+
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+
+        with pysftp.Connection(host, port=port, username=username, password=password, cnopts=cnopts) as sftp:
+            print("connected!!")
+            # 일단 기본 모델 명을 따랐음
+            sftp.get(
+                "/mlflow_models/Boostcamp KLUE Contest/" + model_name + "/pytorch_model.bin",
+                localpath="dashboard/download_model/pytorch_model.bin",
+                callback=lambda x, y: printProgressDecimal(x, y),
+            )
+            sftp.get(
+                "/mlflow_models/Boostcamp KLUE Contest/" + model_name + "/config.json",
+                localpath="dashboard/download_model/config.json",
+                callback=lambda x, y: printProgressDecimal(x, y),
+            )
+
+    sftp.close()

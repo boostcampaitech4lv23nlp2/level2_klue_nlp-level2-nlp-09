@@ -11,6 +11,7 @@ from utils import (
     get_train_valid_split,
     get_training_args,
     label_to_num,
+    save_model_remote,
     set_mlflow_logger,
     set_seed,
 )
@@ -68,6 +69,7 @@ def train():
     # train model
     trainer.train()
     model.save_pretrained("./best_model")
+    save_model_remote("", "kyc3492")
 
 
 def main():
