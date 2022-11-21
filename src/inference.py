@@ -5,11 +5,10 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from load_data import RE_Dataset, load_data, tokenized_dataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, Trainer, TrainingArguments
-
-from load_data import RE_Dataset, load_data, tokenized_dataset
 
 
 def inference(model, tokenized_sent, device):
