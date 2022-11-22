@@ -1,10 +1,15 @@
 import argparse
+import os
 import pickle as pickle
+import sys
 
 import pandas as pd
 import streamlit as st
 
-from utils import connect_remote, download_model, get_filtered_result, test
+PROJECT_ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_ROOT_DIR)
+
+from dashboard.utils import connect_remote, download_model, get_filtered_result, test
 
 st.set_page_config(page_icon="❄️", page_title="Into the RE (Remote.ver)", layout="wide")
 
