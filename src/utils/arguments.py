@@ -56,7 +56,7 @@ class DataTrainingArguments:
     """
 
     task_name: Optional[str] = field(
-        default="RE_baselie",
+        default="RE_baseline",
         metadata={"help": "The name of the task to train"},
     )
     dataset_name: Optional[str] = field(
