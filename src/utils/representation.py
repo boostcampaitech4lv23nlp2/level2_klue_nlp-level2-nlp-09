@@ -15,6 +15,7 @@ def extraction(subject: str) -> Tuple[int, int, str, str]:
     sub_end_idx = int(subject.split(",", subject_length - 3)[subject_length - 3].split(",")[1].split(":")[1])
     subject = "".join(subject.split(",", subject_length - 3)[: subject_length - 3]).split(":")[1]
     subject_entity = subject_entity.replace("'", "").strip()
+    subject = subject.replace("'", "").strip()
 
     return sub_start_idx, sub_end_idx, subject, subject_entity
 
