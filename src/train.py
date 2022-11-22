@@ -3,28 +3,16 @@ import pickle as pickle
 import torch
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, Trainer
 
-from data_loader import REDataset, data_loader
-from model import compute_metrics
-from utils import (
-    DataTrainingArguments,
-    ModelArguments,
-    get_train_valid_split,
-    get_training_args,
-    label_to_num,
-    save_model_remote,
-    set_mlflow_logger,
-    set_seed,
-)
+from src.data_loader import REDataset, data_loader
+from src.model import compute_metrics
+from src.utils import get_train_valid_split, label_to_num, save_model_remote, set_mlflow_logger, set_seed
 
 
-def train():
+def train(model_args, data_args, training_args):
     # Using HfArgumentParser we can turn this class into argparse arguments to be able to specify them on the command line.
     # parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     # model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
-    model_args, data_args = parser.parse_args_into_dataclasses()
-    training_args = get_training_args()
+    set_mlflow_logger()
 
     set_seed(data_args.seed)
 
@@ -33,7 +21,7 @@ def train():
     # dev_raw_dataset = data_loader(data_args.validation_file_path) # validation용 데이터는 따로 만드셔야 합니다.
 
     train_raw_dataset, valid_raw_dataset = get_train_valid_split(train_raw_dataset, valid_size=0.1)
-    valid_raw_dataset.to_csv("../dataset/train/valid.csv", index=False)
+    valid_raw_dataset.to_csv(data_args.validation_file_path, index=False)
 
     # label
     train_label = label_to_num(train_raw_dataset["label"].values)
@@ -69,16 +57,5 @@ def train():
 
     # train model
     trainer.train()
-    model.save_pretrained("./best_model")
-    save_model_remote("", "kyc3492")
-
-
-def main():
-    set_mlflow_logger("", "", 0)
-    train()
-
-
-if __name__ == "__main__":
-    torch.cuda.empty_cache()
-
-    main()
+    model.save_pretrained(data_args.best_model_dir_path)
+    save_model_remote(special_word=data_args.task_name)
