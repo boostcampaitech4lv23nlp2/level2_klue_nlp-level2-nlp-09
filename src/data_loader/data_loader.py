@@ -3,7 +3,20 @@ import pickle as pickle
 import pandas as pd
 import torch
 
-from utils.representation import entity_representation
+from src.utils import entity_representation
+
+
+def preprocessing_dataset(dataset):
+    """처음 불러온 csv 파일을 원하는 형태의 DataFrame으로 변경 시켜줍니다."""
+    return dataset
+
+
+def data_loader(dataset_dir):
+    """csv 파일을 경로에 맡게 불러 옵니다."""
+    pd_dataset = pd.read_csv(dataset_dir)
+    dataset = preprocessing_dataset(pd_dataset)
+
+    return dataset
 
 
 class REDataset(torch.utils.data.Dataset):
@@ -36,16 +49,3 @@ class REDataset(torch.utils.data.Dataset):
             add_special_tokens=True,
         )
         return tokenized_sentences
-
-
-def preprocessing_dataset(dataset):
-    """처음 불러온 csv 파일을 원하는 형태의 DataFrame으로 변경 시켜줍니다."""
-    return dataset
-
-
-def data_loader(dataset_dir):
-    """csv 파일을 경로에 맡게 불러 옵니다."""
-    pd_dataset = pd.read_csv(dataset_dir)
-    dataset = preprocessing_dataset(pd_dataset)
-
-    return dataset

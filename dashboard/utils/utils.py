@@ -14,6 +14,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer, Trai
 
 PROJECT_ROOT_DIR = os.path.dirname((os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 sys.path.append(PROJECT_ROOT_DIR)
+
 from src.data_loader import REDataset, data_loader
 from src.model import compute_metrics
 from src.utils import label_to_num, set_seed

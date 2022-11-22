@@ -1,4 +1,5 @@
 from .get_train_valid_split import get_train_valid_split
+from .representation import entity_representation
 from .set_seed import set_seed
 from .util import (
     DataTrainingArguments,
