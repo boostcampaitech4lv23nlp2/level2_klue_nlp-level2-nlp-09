@@ -1,25 +1,53 @@
 from typing import Tuple
 
+import hanja
 
-def extraction(subject: str) -> Tuple[int, int, str, str]:
+from . import replace_symbol
+
+
+def translation(sentence: str, method: str = None) -> str:
+    assert method in [
+        None,
+        "chinese",
+    ], "입력하신 method는 없습니다."
+    if method is None:
+        return sentence
+
+    if method == "chinese":
+        return hanja.translate(sentence, "substitution")
+
+
+def extraction(entity: str) -> dict:
     """
     Args:
-        subject (str): subject or object
+        entity (str): subject or object
 
     Returns:
-        Tuple[int,int,str,str]: return subject object idx or subject object
+        Dict[int,int,str,str]: return dict containing entity information
     """
-    subject_entity = subject[:-1].split(",")[-1].split(":")[1]
-    subject_length = len(subject.split(","))
-    sub_start_idx = int(subject.split(",", subject_length - 3)[subject_length - 3].split(",")[0].split(":")[1])
-    sub_end_idx = int(subject.split(",", subject_length - 3)[subject_length - 3].split(",")[1].split(":")[1])
-    subject = "".join(subject.split(",", subject_length - 3)[: subject_length - 3]).split(":")[1]
-    subject_entity = subject_entity.replace("'", "").strip()
+    entity_type = entity[:-1].split(",")[-1].split(":")[1]
+    entity_length = len(entity.split(","))
+    start_idx = int(entity.split(",", entity_length - 3)[entity_length - 3].split(",")[0].split(":")[1])
+    end_idx = int(entity.split(",", entity_length - 3)[entity_length - 3].split(",")[1].split(":")[1])
+    entity_word = "".join(entity.split(",", entity_length - 3)[: entity_length - 3]).split(":")[1]
+    entity_word = entity_word.replace("'", "").strip()
+    entity_type = entity_type.replace("'", "").strip()
 
-    return sub_start_idx, sub_end_idx, subject, subject_entity
+    entity_dict = {
+        "start_idx": start_idx,
+        "end_idx": end_idx,
+        "entity_type": entity_type,
+        "entity_word": entity_word,
+    }
+
+    return entity_dict
 
 
-def entity_representation(subject: str, object: str, sentence: str, method: str = None) -> str:
+def unpack_entity_dict(start_idx, end_idx, entity_type, entity_word):
+    return start_idx, end_idx, entity_word, entity_type
+
+
+def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, method: str = None) -> str:
     """
     Args:
         subject (str): subject dictionary
@@ -40,14 +68,14 @@ def entity_representation(subject: str, object: str, sentence: str, method: str 
         "typed_entity_marker_punct",
     ], "입력하신 method는 없습니다."
 
-    sub_start_idx, sub_end_idx, subject, subject_entity = extraction(subject)
-    obj_start_idx, obj_end_idx, object, object_entity = extraction(object)
+    sub_start_idx, sub_end_idx, subject, subject_entity = unpack_entity_dict(**subject_dict)
+    obj_start_idx, obj_end_idx, object, object_entity = unpack_entity_dict(**object_dict)
 
     # entity representation
 
     # baseline code
     if method is None:
-        temp = subject + " [SEP]" + object + " [SEP] " + sentence
+        temp = subject + " [SEP] " + object + " [SEP] " + sentence
 
     # entity mask
     elif method == "entity_mask":
@@ -145,3 +173,38 @@ def entity_representation(subject: str, object: str, sentence: str, method: str 
             temp = temp.replace(f"<O:{object_entity}>", f"# ∧ {object_entity.lower()} ∧")
 
     return temp
+
+
+def representation(
+    subject: str,
+    object: str,
+    sentence: str,
+    entity_method: str = None,
+    translation_methods: list = [None],
+    is_replace=False,
+) -> str:
+    """
+    Args:
+        subject (str): subject dictionary
+        object (str):  object dictionary
+        sentence (str): single sentence
+        entity_method (str, optional): entity representation. Defaults to None.
+        translation_methods (list, optional): translation methods: (None, chinese)
+        is_replace (bool, optional) replace symbol methods. Defaults to False.(True, False)
+
+    Returns:
+        str: single sentence
+    """
+
+    subject_dict = extraction(subject)
+    object_dict = extraction(object)
+
+    tmp = entity_representation(subject_dict, object_dict, sentence, method=entity_method)
+
+    for translation_method in translation_methods:
+        tmp = translation(tmp, method=translation_method)
+
+    if is_replace:
+        tmp = replace_symbol(tmp)
+
+    return tmp
