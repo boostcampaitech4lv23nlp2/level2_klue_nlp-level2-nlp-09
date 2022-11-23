@@ -56,8 +56,8 @@ def train(model_args, data_args, training_args):
 
     # train model
     special_word = data_args.task_name
-    tracking_uri = "http://kyc-system.mynetgear.com:5000"
-    experiment_name = "Practice"
+    tracking_uri = ""
+    experiment_name = ""
     logging_step = 100
 
     model_id = set_mlflow_logger(special_word, tracking_uri, experiment_name, logging_step)
