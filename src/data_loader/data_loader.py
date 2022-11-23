@@ -3,7 +3,7 @@ import pickle as pickle
 import pandas as pd
 import torch
 
-from src.utils import entity_representation
+from src.utils import representation
 
 
 def preprocessing_dataset(dataset):
@@ -38,7 +38,7 @@ class REDataset(torch.utils.data.Dataset):
         """tokenizer에 따라 sentence를 tokenizing 합니다."""
         concat_entity = []
         for e01, e02, sentence in zip(dataset["subject_entity"], dataset["object_entity"], dataset["sentence"]):
-            temp = entity_representation(e01, e02, sentence, method=None)
+            temp = representation(e01, e02, sentence, entity_method=None, is_replace=False, translation_methods=[None])
             concat_entity.append(temp)
         tokenized_sentences = tokenizer(
             concat_entity,
