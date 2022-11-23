@@ -9,3 +9,4 @@ streamlit==1.14.1
 seaborn==0.12.0
 ipykernel==6.17.1
 hanja==0.13.3
+numpy==1.19.2
