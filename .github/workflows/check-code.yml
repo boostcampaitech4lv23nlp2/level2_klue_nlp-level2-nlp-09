@@ -25,6 +25,9 @@ jobs:
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
       - name: Install dependencies
+        uses: py-actions/py-dependency-install@v4
+        with:
+          path: "requirements.txt"
         run: |
           python3 -m pip install --upgrade pip
       - name: Check Test
