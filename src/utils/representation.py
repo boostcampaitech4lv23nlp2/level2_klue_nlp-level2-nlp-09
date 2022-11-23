@@ -2,6 +2,8 @@ from typing import Tuple
 
 import hanja
 
+from . import replace_symbol
+
 
 def translation(sentence: str, method: str = None) -> str:
     assert method in [
@@ -174,7 +176,12 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
 
 
 def representation(
-    subject: str, object: str, sentence: str, entity_method: str = None, translation_methods: list = [None]
+    subject: str,
+    object: str,
+    sentence: str,
+    entity_method: str = None,
+    translation_methods: list = [None],
+    is_replace=False,
 ) -> str:
     """
     Args:
@@ -183,6 +190,7 @@ def representation(
         sentence (str): single sentence
         entity_method (str, optional): entity representation. Defaults to None.
         translation_methods (list, optional): translation methods: (None, chinese)
+        is_replace (bool, optional) replace symbol methods. Defaults to False.(True, False)
 
     Returns:
         str: single sentence
@@ -195,5 +203,8 @@ def representation(
 
     for translation_method in translation_methods:
         tmp = translation(tmp, method=translation_method)
+
+    if is_replace:
+        tmp = replace_symbol(tmp)
 
     return tmp

@@ -10,7 +10,7 @@ def get_training_args(
     output_dir="./results",
     save_total_limit=5,
     save_strategy="epoch",
-    num_train_epochs=1,
+    num_train_epochs=20,
     learning_rate=5e-5,
     per_device_train_batch_size=128,
     per_device_eval_batch_size=128,
