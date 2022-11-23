@@ -75,7 +75,7 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
 
     # baseline code
     if method is None:
-        temp = subject + " [SEP]" + object + " [SEP] " + sentence
+        temp = subject + " [SEP] " + object + " [SEP] " + sentence
 
     # entity mask
     elif method == "entity_mask":
