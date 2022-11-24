@@ -1,5 +1,6 @@
 import pickle as pickle
 
+import pandas as pd
 import torch
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, Trainer
 
@@ -13,7 +14,6 @@ def train(model_args, data_args, training_args):
     # Using HfArgumentParser we can turn this class into argparse arguments to be able to specify them on the command line.
     # parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     # model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    set_mlflow_logger()
 
     set_seed(data_args.seed)
 
@@ -38,6 +38,13 @@ def train(model_args, data_args, training_args):
     # model
     model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
 
+    new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
+    new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
+    special_tokens_dict = {"additional_special_tokens": new_special_tokens}
+    tokenizer.add_tokens(new_tokens)
+    tokenizer.add_special_tokens(special_tokens_dict)
+    model.resize_token_embeddings(len(tokenizer))
+
     model.parameters
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -57,6 +64,12 @@ def train(model_args, data_args, training_args):
     )
 
     # train model
+    special_word = data_args.task_name
+    tracking_uri = ""
+    experiment_name = ""
+    logging_step = 100
+
+    model_id = set_mlflow_logger(special_word, tracking_uri, experiment_name, logging_step)
     trainer.train()
     model.save_pretrained(data_args.best_model_dir_path)
-    save_model_remote(special_word=data_args.task_name)
+    save_model_remote(experiment_name, model_id)
