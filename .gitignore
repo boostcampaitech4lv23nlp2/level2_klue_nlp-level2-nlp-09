@@ -137,11 +137,13 @@ mlflow_config.yml
 sftp_config.yml
 logs/
 mlruns/
-*.csv
 *.ipynb_checkpoints
+dataset/
+prediction/
 results/
 ._test
 ._train
 best_model/
 tmp_trainer/
 download_model/
+result_analysis/
