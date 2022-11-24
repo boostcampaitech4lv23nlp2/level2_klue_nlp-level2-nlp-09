@@ -49,6 +49,10 @@ def inference(model_args, data_args, training_args):
     model.to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
+    new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
+    tokenizer.add_tokens(new_tokens)
+    model.resize_token_embeddings(len(tokenizer))
+
     # load test datset
     test_raw_dataset = data_loader(data_args.test_file_path)
     test_label = [100 for _ in range(len(test_raw_dataset))]
