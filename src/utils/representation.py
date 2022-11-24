@@ -1,20 +1,32 @@
 from typing import Tuple
 
+import re
+
+import googletrans
 import hanja
 
 from . import replace_symbol
 
 
 def translation(sentence: str, method: str = None) -> str:
-    assert method in [
-        None,
-        "chinese",
-    ], "입력하신 method는 없습니다."
+    assert method in [None, "chinese", "japanese"], "입력하신 method는 없습니다."
     if method is None:
         return sentence
 
     if method == "chinese":
         return hanja.translate(sentence, "substitution")
+
+    if method == "japanese":
+        japanese_checker = re.compile("[ぁ-ゔ]+|[ァ-ヴー]+[々〆〤]")
+
+        if japanese_checker.findall(sentence):
+            translator = googletrans.Translator()
+            checked = japanese_checker.finditer(sentence)
+            for value in checked:
+                trans = translator.translate(value.group(), src="ja", dest="ko")
+                temp = sentence[: value.start()] + trans.text + sentence[value.end() :]
+                sentence = temp
+        return sentence
 
 
 def extraction(entity: str) -> dict:
@@ -189,7 +201,7 @@ def representation(
         object (str):  object dictionary
         sentence (str): single sentence
         entity_method (str, optional): entity representation. Defaults to None.
-        translation_methods (list, optional): translation methods: (None, chinese)
+        translation_methods (list, optional): translation methods: (None, chinese, japanese)
         is_replace (bool, optional) replace symbol methods. Defaults to False.(True, False)
 
     Returns:
