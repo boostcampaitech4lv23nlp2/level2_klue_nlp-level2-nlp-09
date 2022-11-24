@@ -170,7 +170,7 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
             temp = temp.replace(f"<S:{subject_entity}>", f"@ * {subject_entity.lower()} *")
             temp = temp.replace(f"</S:{subject_entity}>", "@")
             temp = temp.replace(f"</O:{object_entity}>", "#")
-            temp = temp.replace(f"<O:{object_entity}>", f"# ∧ {object_entity.lower()} ∧")
+            temp = temp.replace(f"<O:{object_entity}>", f"# ^ {object_entity.lower()} ^")
 
     return temp
 
