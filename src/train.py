@@ -6,6 +6,7 @@ from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTok
 from src.data_loader import REDataset, data_loader
 from src.model import compute_metrics
 from src.utils import get_train_valid_split, label_to_num, save_model_remote, set_mlflow_logger, set_seed
+from src.utils.custom_trainer import CustomTrainer
 
 
 def train(model_args, data_args, training_args):
@@ -47,7 +48,7 @@ def train(model_args, data_args, training_args):
     train_dataset = REDataset(train_raw_dataset, tokenizer, train_label)
     valid_dataset = REDataset(valid_raw_dataset, tokenizer, valid_label)
 
-    trainer = Trainer(
+    trainer = CustomTrainer(
         model=model,  # the instantiated 🤗 Transformers model to be trained
         args=training_args,  # training arguments, defined above
         train_dataset=train_dataset,  # training dataset
