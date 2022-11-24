@@ -50,7 +50,10 @@ def inference(model_args, data_args, training_args):
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
     new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
+    new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
+    special_tokens_dict = {"additional_special_tokens": new_special_tokens}
     tokenizer.add_tokens(new_tokens)
+    tokenizer.add_special_tokens(special_tokens_dict)
     model.resize_token_embeddings(len(tokenizer))
 
     # load test datset

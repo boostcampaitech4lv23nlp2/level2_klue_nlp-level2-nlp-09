@@ -10,10 +10,10 @@ def get_training_args(
     output_dir="./results",
     save_total_limit=5,
     save_strategy="epoch",
-    num_train_epochs=20,
+    num_train_epochs=5,
     learning_rate=5e-5,
-    per_device_train_batch_size=128,
-    per_device_eval_batch_size=128,
+    per_device_train_batch_size=32,
+    per_device_eval_batch_size=32,
     warmup_steps=458,
     weight_decay=0.01,
     logging_dir="./logs",
@@ -65,7 +65,7 @@ class DataTrainingArguments:
     dataset_config_name: Optional[str] = field(
         default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
     )
-    seed: int = field(default=404)
+    seed: int = field(default=200)
     max_seq_length: int = field(
         default=256,
         metadata={
@@ -141,7 +141,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="klue/roberta-small",
+        default="klue/roberta-large",
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"},
     )
     config_name: Optional[str] = field(
