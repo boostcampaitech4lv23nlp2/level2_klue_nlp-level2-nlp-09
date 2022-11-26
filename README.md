@@ -4,6 +4,18 @@ This is 🚀 Team NLP-09's repository for the 2nd boostcamp AI Tech competition 
 
 The competition is on sentence-level Relation Extraction, RE.
 
+## Contributors
+Yong Woo Song|Woo Bin Park|Jin Myeon Ahn|Yeong Chul Kang|Gang Hyeok Lee
+:-:|:-:|:-:|:-:|:-:
+![image1][image1]|![image2][image2]|![image3][image3]|![image4][image4]|![image5][image5]
+[Github](https://github.com/facerain)|[Github](https://github.com/bzantium)|[Github](https://github.com/iron-ij)|[Github](https://github.com/monologg)|[Github](https://github.com/ghlrobin)
+
+[image1]: https://avatars.githubusercontent.com/facerain
+[image2]: https://avatars.githubusercontent.com/bzantium
+[image3]: https://avatars.githubusercontent.com/iron-ij
+[image4]: https://avatars.githubusercontent.com/monologg
+[image5]: https://avatars.githubusercontent.com/ghlrobin
+
 ## 📄 Guideline
 
 ### 1. Setup
