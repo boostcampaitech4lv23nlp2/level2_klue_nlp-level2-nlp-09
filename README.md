@@ -5,15 +5,15 @@ This is 🚀 Team NLP-09's repository for the 2nd boostcamp AI Tech competition 
 The competition is on sentence-level Relation Extraction, RE.
 
 ## Contributors
-Yong Woo Song|Woo Bin Park|Jin Myeon Ahn|Yeong Chul Kang|Gang Hyeok Lee
+Yong Woo Song|Woo Bin Park|Jin Myeong Ahn|Yeong Cheol Kang|Gang Hyeok Lee
 :-:|:-:|:-:|:-:|:-:
 ![image1][image1]|![image2][image2]|![image3][image3]|![image4][image4]|![image5][image5]
-[Github](https://github.com/facerain)|[Github](https://github.com/bzantium)|[Github](https://github.com/iron-ij)|[Github](https://github.com/monologg)|[Github](https://github.com/ghlrobin)
+[Github](https://github.com/facerain)|[Github](https://github.com/wbin0718)|[Github](https://github.com/jinmyeongAN)|[Github](https://github.com/kyc3492)|[Github](https://github.com/ghlrobin)
 
 [image1]: https://avatars.githubusercontent.com/facerain
-[image2]: https://avatars.githubusercontent.com/bzantium
-[image3]: https://avatars.githubusercontent.com/iron-ij
-[image4]: https://avatars.githubusercontent.com/monologg
+[image2]: https://avatars.githubusercontent.com/wbin0718
+[image3]: https://avatars.githubusercontent.com/jinmyeongAN
+[image4]: https://avatars.githubusercontent.com/kyc3492
 [image5]: https://avatars.githubusercontent.com/ghlrobin
 
 ## 📄 Guideline
@@ -36,7 +36,7 @@ make test
 ### 4. Run Train
 ```bash
 cd src
-python train.py
+python main.py
 ```
 You can see more option to train in `src/utils/util`.
 
@@ -44,13 +44,13 @@ You can see more option to train in `src/utils/util`.
 ```bash
 make dashboard
 ```
-Then you can acess dashboard by your web browser.
+Then you can acess dashboard through your web browser.
 (If you use **VScode**, check [issue](https://github.com/boostcampaitech4lv23nlp2/level2_klue_nlp-level2-nlp-09/issues/15))
 
 ### 6. Run Inference
 ```bash
 cd src
-python inference.py
+python main.py --do_train=False --do_inference
 ```
 You can see more option to inference in `src/utils/util`.
 
