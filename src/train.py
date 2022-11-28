@@ -3,7 +3,14 @@ import pickle as pickle
 import pandas as pd
 import torch
 import torch.nn as nn
-from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, Trainer
+from transformers import (
+    AutoConfig,
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    HfArgumentParser,
+    Trainer,
+    modeling_outputs,
+)
 
 from src.data_loader import REDataset, data_loader
 from src.model import compute_metrics
@@ -23,9 +30,9 @@ class CombineModels(nn.Module):
         c2 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=29)
         c3 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=30)
 
-        self.roberta1 = AutoModelForSequenceClassification.from_pretrained("src/2_relations", config=c1)
-        self.roberta2 = AutoModelForSequenceClassification.from_pretrained("src/29_relations", config=c2)
-        self.roberta3 = AutoModelForSequenceClassification.from_pretrained("src/30_relations", config=c3)
+        self.roberta1 = AutoModelForSequenceClassification.from_pretrained("src/best_model/2_relations", config=c1)
+        self.roberta2 = AutoModelForSequenceClassification.from_pretrained("src/best_model/29_relations", config=c2)
+        self.roberta3 = AutoModelForSequenceClassification.from_pretrained("src/best_model/30_relations", config=c3)
 
         for p in self.roberta1.parameters():
             p.requires_grad = False
@@ -58,8 +65,8 @@ class CombineModels(nn.Module):
         concatenated_vectors = torch.cat((logits_1, logits_2, logits_3), dim=-1)
 
         output = self.classifier(concatenated_vectors)
-        # outputs = SequenceClassifierOutput(logits=output)
-        return output  # WARNING!!!! supposed to be outputs
+        outputs = modeling_outputs.SequenceClassifierOutput(logits=output)
+        return outputs  # WARNING!!!! supposed to be outputs
 
 
 def train(model_args, data_args, training_args):
@@ -81,14 +88,15 @@ def train(model_args, data_args, training_args):
     valid_label = label_to_num(valid_raw_dataset["label"].values)
 
     # setting model hyperparameter
-    num_labels = len(set(train_label))
-    model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
+    # num_labels = len(set(train_label))
+    # model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
 
     # load model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
     # model
-    model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
+    # model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
+    model = CombineModels()
 
     # new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
     # new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
