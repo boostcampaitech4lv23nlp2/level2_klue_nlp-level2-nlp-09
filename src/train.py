@@ -30,15 +30,15 @@ def train(model_args, data_args, training_args):
     valid_label = label_to_num(valid_raw_dataset["label"].values)
 
     # setting model hyperparameter
-    num_labels = len(set(train_label))
-    model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
+    # num_labels = len(set(train_label))
+    # model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=num_labels)
 
     # load model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
     # model
-    model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
-    # model = Model(model_args.model_name_or_path, model_config)
+    # model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
+    model = Model(model_args.model_name_or_path)
 
     new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
     new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()

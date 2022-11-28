@@ -11,11 +11,11 @@ from transformers import (
 
 
 # BiGRU -> FC
-class Model(nn.Module):
-    def __init__(self, MODEL_NAME, model_config):
+class Model(torch.nn.Module):
+    def __init__(self, MODEL_NAME):
         super().__init__()
         # self.model_config =  AutoConfig.from_pretrained(MODEL_NAME)
-        self.model_config = model_config
+        self.model_config = AutoConfig.from_pretrained(MODEL_NAME)
         self.model_config.num_labels = 30
         self.model = AutoModel.from_pretrained(MODEL_NAME, config=self.model_config)
         self.hidden_dim = self.model_config.hidden_size
