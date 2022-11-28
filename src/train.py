@@ -47,20 +47,22 @@ class CombineModels(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(p=0.1),
-            nn.Linear(768 * 15, 768, bias=True),
+            nn.Linear(768 * 3, 768, bias=True),
             nn.Tanh(),
             nn.Dropout(p=0.1),
             nn.Linear(768, 30, bias=True),
         )
 
-    def forward(self, input_ids, attention_mask):
+    def forward(self, input_ids, attention_mask, labels, token_type_ids):
         logits_1 = self.roberta1(input_ids.clone(), attention_mask=attention_mask).get("logits")
         logits_2 = self.roberta2(input_ids.clone(), attention_mask=attention_mask).get("logits")
         logits_3 = self.roberta3(input_ids.clone(), attention_mask=attention_mask).get("logits")
 
         logits_1 = self.fc1(logits_1)
         logits_2 = self.fc2(logits_2)
-        logits_3 = self.fc1(logits_3)
+        logits_3 = self.fc3(logits_3)
+
+        self.labels = labels
 
         concatenated_vectors = torch.cat((logits_1, logits_2, logits_3), dim=-1)
 
@@ -115,7 +117,7 @@ def train(model_args, data_args, training_args):
     train_dataset = REDataset(train_raw_dataset, tokenizer, train_label)
     valid_dataset = REDataset(valid_raw_dataset, tokenizer, valid_label)
 
-    trainer = Trainer(
+    trainer = CustomTrainer(
         model=model,  # the instantiated 🤗 Transformers model to be trained
         args=training_args,  # training arguments, defined above
         train_dataset=train_dataset,  # training dataset

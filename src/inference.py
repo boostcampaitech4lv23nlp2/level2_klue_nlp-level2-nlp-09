@@ -4,13 +4,65 @@ import pickle as pickle
 import numpy as np
 import pandas as pd
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, modeling_outputs
 
 from src.data_loader import REDataset, data_loader
 from src.utils import num_to_label
+
+
+class CombineModels(nn.Module):
+    """
+    edit by 이요한_T2166
+    """
+
+    def __init__(self):
+        super(CombineModels, self).__init__()
+
+        c1 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=2)
+        c2 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=29)
+        c3 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=30)
+
+        self.roberta1 = AutoModelForSequenceClassification.from_pretrained("src/best_model/2_relations", config=c1)
+        self.roberta2 = AutoModelForSequenceClassification.from_pretrained("src/best_model/29_relations", config=c2)
+        self.roberta3 = AutoModelForSequenceClassification.from_pretrained("src/best_model/30_relations", config=c3)
+
+        for p in self.roberta1.parameters():
+            p.requires_grad = False
+        for p in self.roberta2.parameters():
+            p.requires_grad = False
+        for p in self.roberta3.parameters():
+            p.requires_grad = False
+
+        self.fc1 = nn.Linear(2, 768)
+        self.fc2 = nn.Linear(29, 768)
+        self.fc3 = nn.Linear(30, 768)
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=0.1),
+            nn.Linear(768 * 3, 768, bias=True),
+            nn.Tanh(),
+            nn.Dropout(p=0.1),
+            nn.Linear(768, 30, bias=True),
+        )
+
+    def forward(self, input_ids, attention_mask, labels, token_type_ids):
+        logits_1 = self.roberta1(input_ids.clone(), attention_mask=attention_mask).get("logits")
+        logits_2 = self.roberta2(input_ids.clone(), attention_mask=attention_mask).get("logits")
+        logits_3 = self.roberta3(input_ids.clone(), attention_mask=attention_mask).get("logits")
+
+        logits_1 = self.fc1(logits_1)
+        logits_2 = self.fc2(logits_2)
+        logits_3 = self.fc3(logits_3)
+
+        concatenated_vectors = torch.cat((logits_1, logits_2, logits_3), dim=-1)
+
+        output = self.classifier(concatenated_vectors)
+        outputs = modeling_outputs.SequenceClassifierOutput(logits=output)
+        return outputs  # WARNING!!!! supposed to be outputs
 
 
 def predict(model, tokenized_sent, device):
@@ -28,6 +80,7 @@ def predict(model, tokenized_sent, device):
                 input_ids=data["input_ids"].to(device),
                 attention_mask=data["attention_mask"].to(device),
                 token_type_ids=data["token_type_ids"].to(device),
+                labels=data["labels"].to(device),
             )
         logits = outputs[0]
         prob = F.softmax(logits, dim=-1).detach().cpu().numpy()
@@ -45,7 +98,7 @@ def inference(model_args, data_args, training_args):
     주어진 dataset csv 파일과 같은 형태일 경우 inference 가능한 코드입니다.
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = AutoModelForSequenceClassification.from_pretrained(data_args.best_model_dir_path)
+    model = CombineModels()
     model.to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
