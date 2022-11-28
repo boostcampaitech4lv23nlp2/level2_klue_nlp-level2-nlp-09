@@ -2,12 +2,64 @@ import pickle as pickle
 
 import pandas as pd
 import torch
+import torch.nn as nn
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, Trainer
 
 from src.data_loader import REDataset, data_loader
 from src.model import compute_metrics
 from src.utils import get_train_valid_split, label_to_num, save_model_remote, set_mlflow_logger, set_seed
 from src.utils.custom_trainer import CustomTrainer
+
+
+class CombineModels(nn.Module):
+    """
+    edit by 이요한_T2166
+    """
+
+    def __init__(self):
+        super(CombineModels, self).__init__()
+
+        c1 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=2)
+        c2 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=29)
+        c3 = AutoConfig.from_pretrained("klue/roberta-large", num_labels=30)
+
+        self.roberta1 = AutoModelForSequenceClassification.from_pretrained("src/2_relations", config=c1)
+        self.roberta2 = AutoModelForSequenceClassification.from_pretrained("src/29_relations", config=c2)
+        self.roberta3 = AutoModelForSequenceClassification.from_pretrained("src/30_relations", config=c3)
+
+        for p in self.roberta1.parameters():
+            p.requires_grad = False
+        for p in self.roberta2.parameters():
+            p.requires_grad = False
+        for p in self.roberta3.parameters():
+            p.requires_grad = False
+
+        self.fc1 = nn.Linear(2, 768)
+        self.fc2 = nn.Linear(29, 768)
+        self.fc3 = nn.Linear(30, 768)
+
+        self.classifier = nn.Sequential(
+            nn.Dropout(p=0.1),
+            nn.Linear(768 * 15, 768, bias=True),
+            nn.Tanh(),
+            nn.Dropout(p=0.1),
+            nn.Linear(768, 30, bias=True),
+        )
+
+    def forward(self, input_ids, attention_mask):
+        logits_1 = self.roberta1(input_ids.clone(), attention_mask=attention_mask).get("logits")
+        logits_2 = self.roberta2(input_ids.clone(), attention_mask=attention_mask).get("logits")
+        logits_3 = self.roberta3(input_ids.clone(), attention_mask=attention_mask).get("logits")
+
+        logits_1 = self.fc1(logits_1)
+        logits_2 = self.fc2(logits_2)
+        logits_3 = self.fc1(logits_3)
+
+        concatenated_vectors = torch.cat((logits_1, logits_2, logits_3), dim=-1)
+
+        output = self.classifier(concatenated_vectors)
+        # outputs = SequenceClassifierOutput(logits=output)
+        return output  # WARNING!!!! supposed to be outputs
 
 
 def train(model_args, data_args, training_args):
