@@ -42,9 +42,9 @@ class REDataset(torch.utils.data.Dataset):
                 e01,
                 e02,
                 sentence,
-                entity_method="typed_entity_marker",
+                entity_method="typed_entity_marker_punct",
                 is_replace=True,
-                translation_methods=["chinese", "japanese"],
+                translation_methods=[],
             )
             concat_entity.append(temp)
         tokenized_sentences = tokenizer(

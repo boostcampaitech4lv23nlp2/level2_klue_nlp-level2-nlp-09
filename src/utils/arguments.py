@@ -39,7 +39,7 @@ def get_training_args(
         # `steps`: Evaluate every `eval_steps`.
         # `epoch`: Evaluate every end of epoch.
         load_best_model_at_end=load_best_model_at_end,
-        metric_for_best_model=metric_for_best_model
+        metric_for_best_model=metric_for_best_model,
         # 사용한 option 외에도 다양한 option들이 있습니다.
         # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
     )
