@@ -21,7 +21,6 @@ def get_training_args(
     evaluation_strategy="epoch",
     load_best_model_at_end=True,
     metric_for_best_model="eval_micro_f1_score",
-    fp16=True,
 ):
     training_args = TrainingArguments(
         output_dir=output_dir,  # output directory
@@ -41,7 +40,6 @@ def get_training_args(
         # `epoch`: Evaluate every end of epoch.
         load_best_model_at_end=load_best_model_at_end,
         metric_for_best_model=metric_for_best_model,
-        fp16=fp16
         # 사용한 option 외에도 다양한 option들이 있습니다.
         # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
     )

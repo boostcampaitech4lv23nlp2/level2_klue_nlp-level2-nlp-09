@@ -84,7 +84,7 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
     obj_start_idx, obj_end_idx, object, object_entity = unpack_entity_dict(**object_dict)
 
     # entity representation
-
+    TYPE = {"ORG": "단체", "PER": "사람", "DAT": "날짜", "LOC": "위치", "POH": "기타", "NOH": "수량"}
     # baseline code
     if method is None:
         temp = subject + " [SEP] " + object + " [SEP] " + sentence
@@ -179,10 +179,12 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
         # typed entity marker punct
         if method == "typed_entity_marker_punct":
 
-            temp = temp.replace(f"<S:{subject_entity}>", f"@ * {subject_entity.lower()} *")
+            temp = temp.replace(f"<S:{subject_entity}>", f"@ * {TYPE[subject_entity]} *")
             temp = temp.replace(f"</S:{subject_entity}>", "@")
             temp = temp.replace(f"</O:{object_entity}>", "#")
-            temp = temp.replace(f"<O:{object_entity}>", f"# ^ {object_entity.lower()} ^")
+            temp = temp.replace(f"<O:{object_entity}>", f"# ^ {TYPE[object_entity]} ^")
+
+            temp += f"[SEP]이 문장에서 [{object}]는 [{subject}]의 [{TYPE[object_entity]}]이다."
 
     return temp
 
