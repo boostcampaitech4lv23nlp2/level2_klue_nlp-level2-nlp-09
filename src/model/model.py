@@ -24,7 +24,7 @@ class Model(torch.nn.Module):
         )
         self.fc = nn.Linear(self.hidden_dim * 2, self.model_config.num_labels)
 
-    def forward(self, input_ids, attention_mask):
+    def forward(self, input_ids, attention_mask, labels):
         output = self.model(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
         # (batch, max_len, hidden_dim)
 

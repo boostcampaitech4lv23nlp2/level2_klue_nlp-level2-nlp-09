@@ -45,7 +45,7 @@ def inference(model_args, data_args, training_args):
     주어진 dataset csv 파일과 같은 형태일 경우 inference 가능한 코드입니다.
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = AutoModelForSequenceClassification.from_pretrained(data_args.best_model_dir_path)
+    model = AutoModelForSequenceClassification.from_pretrained("./results/checkpoint-1828")
     model.to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
