@@ -119,7 +119,7 @@ class DataTrainingArguments:
         },
     )
     train_file_path: Optional[str] = field(
-        default="dataset/train/train.csv", metadata={"help": "A csv or a json file containing the training data."}
+        default="dataset/train/re_train.csv", metadata={"help": "A csv or a json file containing the training data."}
     )
     validation_file_path: Optional[str] = field(
         default="dataset/train/valid.csv", metadata={"help": "A csv or a json file containing the validation data."}
