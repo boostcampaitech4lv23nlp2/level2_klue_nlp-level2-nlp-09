@@ -78,6 +78,7 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
         "entity_marker_punct",
         "typed_entity_marker",
         "typed_entity_marker_punct",
+        "typed_entity_marker_punct_custom",
     ], "입력하신 method는 없습니다."
 
     sub_start_idx, sub_end_idx, subject, subject_entity = unpack_entity_dict(**subject_dict)
@@ -147,7 +148,11 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
             temp = temp.replace("[/E2]", "#")
 
     # typed entity marker
-    elif method == "typed_entity_marker" or method == "typed_entity_marker_punct":
+    elif (
+        method == "typed_entity_marker"
+        or method == "typed_entity_marker_punct"
+        or method == "typed_entity_marker_punct_custom"
+    ):
         subject = subject.replace("'", "").upper()
         object = object.replace("'", "").upper()
 
@@ -185,6 +190,14 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
             temp = temp.replace(f"<O:{object_entity}>", f"# ^ {TYPE[object_entity]} ^")
 
             temp += f"[SEP]이 문장에서 [{object}]는 [{subject}]의 [{TYPE[object_entity]}]이다."
+
+        if method == "typed_entity_marker_punct_custom":
+            temp = temp.replace(f"<S:{subject_entity}>", f"<S> * {TYPE[subject_entity]} *")
+            temp = temp.replace(f"</S:{subject_entity}>", "</S>")
+            temp = temp.replace(f"<O:{object_entity}>", f"<O> ^ {TYPE[object_entity]} ^")
+            temp = temp.replace(f"</O:{object_entity}>", "</O>")
+
+            # temp += f" [SEP] 이 문장에서 [{object}]는 [{subject}]의 [{TYPE[object_entity]}]이다."
 
     return temp
 
