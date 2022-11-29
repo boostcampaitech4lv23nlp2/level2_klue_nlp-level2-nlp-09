@@ -19,7 +19,7 @@ class Model(torch.nn.Module):
         self.model_config.num_labels = 30
         self.model = AutoModel.from_pretrained(MODEL_NAME, config=self.model_config)
         self.hidden_dim = self.model_config.hidden_size
-        self.gru = nn.GRU(
+        self.lstm = nn.LSTM(
             input_size=self.hidden_dim, hidden_size=self.hidden_dim, num_layers=1, batch_first=True, bidirectional=True
         )
         self.fc = nn.Linear(self.hidden_dim * 2, self.model_config.num_labels)
@@ -28,7 +28,7 @@ class Model(torch.nn.Module):
         output = self.model(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
         # (batch, max_len, hidden_dim)
 
-        hidden, last_hidden = self.gru(output)
+        hidden, (last_hidden, last_cell) = self.lstm(output)
         output = torch.cat((last_hidden[0], last_hidden[1]), dim=1)
         # hidden : (batch, max_len, hidden_dim * 2)
         # last_hidden : (2, batch, hidden_dim)

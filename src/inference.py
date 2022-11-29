@@ -7,10 +7,13 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
 
 from src.data_loader import REDataset, data_loader
-from src.utils import num_to_label
+from src.model import compute_metrics
+from src.model.model import Model
+from src.utils import get_train_valid_split, label_to_num, num_to_label, save_model_remote, set_mlflow_logger, set_seed
+from src.utils.custom_trainer import CustomTrainer
 
 
 def predict(model, tokenized_sent, device):
@@ -45,9 +48,28 @@ def inference(model_args, data_args, training_args):
     주어진 dataset csv 파일과 같은 형태일 경우 inference 가능한 코드입니다.
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = AutoModelForSequenceClassification.from_pretrained("./results/checkpoint-1828")
-    model.to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
+
+    # model = AutoModelForSequenceClassification.from_pretrained("./results/checkpoint-1828")
+    model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=30)
+    model = Model(model_config, tokenizer, model_args.model_name_or_path)
+    state_dict = torch.load("model.pt")
+    model.load_state_dict(state_dict)
+
+    model.to(device)
+
+    valid_raw_dataset = data_loader(data_args.validation_file_path)
+    valid_label = label_to_num(valid_raw_dataset["label"].values)
+    valid_dataset = REDataset(valid_raw_dataset, tokenizer, valid_label)
+    trainer = CustomTrainer(
+        model=model,  # the instantiated 🤗 Transformers model to be trained
+        args=training_args,  # training arguments, defined above  # training dataset
+        eval_dataset=valid_dataset,  # evaluation dataset
+        compute_metrics=compute_metrics,
+    )
+
+    metrics = trainer.evaluate(valid_dataset)
+    print(metrics)
 
     new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
     new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
