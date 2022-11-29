@@ -131,9 +131,7 @@ def train(model_args, data_args, training_args):
     experiment_name = ""
     logging_step = 100
 
-    model_id = set_mlflow_logger(special_word, tracking_uri, experiment_name, logging_step)
+    set_mlflow_logger(special_word, tracking_uri, experiment_name, logging_step)
     trainer.train()
-    trainer.save_model("src/best_model")
-    # model.save_pretrained(data_args.best_model_dir_path)
+
     torch.save(model.state_dict(), "model.pt")
-    save_model_remote(experiment_name, model_id)
