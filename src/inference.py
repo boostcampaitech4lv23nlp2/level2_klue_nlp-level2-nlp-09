@@ -31,8 +31,9 @@ def predict(model, tokenized_sent, device):
                 input_ids=data["input_ids"].to(device),
                 attention_mask=data["attention_mask"].to(device),
                 token_type_ids=data["token_type_ids"].to(device),
+                labels=None,
             )
-        logits = outputs[0]
+        logits = outputs["logits"]
         prob = F.softmax(logits, dim=-1).detach().cpu().numpy()
         logits = logits.detach().cpu().numpy()
         result = np.argmax(logits, axis=-1)
@@ -51,8 +52,15 @@ def inference(model_args, data_args, training_args):
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
 
     # model = AutoModelForSequenceClassification.from_pretrained("./results/checkpoint-1828")
-    model_config = AutoConfig.from_pretrained(model_args.model_name_or_path, num_labels=30)
-    model = Model(model_config, tokenizer, model_args.model_name_or_path)
+    model = Model(model_args.model_name_or_path)
+
+    new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
+    new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
+    special_tokens_dict = {"additional_special_tokens": new_special_tokens}
+    tokenizer.add_tokens(new_tokens)
+    tokenizer.add_special_tokens(special_tokens_dict)
+    model.model.resize_token_embeddings(len(tokenizer))
+
     state_dict = torch.load("model.pt")
     model.load_state_dict(state_dict)
 
@@ -76,7 +84,7 @@ def inference(model_args, data_args, training_args):
     special_tokens_dict = {"additional_special_tokens": new_special_tokens}
     tokenizer.add_tokens(new_tokens)
     tokenizer.add_special_tokens(special_tokens_dict)
-    model.resize_token_embeddings(len(tokenizer))
+    model.model.resize_token_embeddings(len(tokenizer))
 
     # load test datset
     test_raw_dataset = data_loader(data_args.test_file_path)
