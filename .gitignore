@@ -147,3 +147,4 @@ best_model/
 tmp_trainer/
 download_model/
 result_analysis/
+model.pt
