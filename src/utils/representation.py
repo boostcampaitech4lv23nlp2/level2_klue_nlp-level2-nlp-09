@@ -84,6 +84,10 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
     obj_start_idx, obj_end_idx, object, object_entity = unpack_entity_dict(**object_dict)
 
     # entity representation
+    # TYPE = {"ORG": "ORG", "PER": "PER", "DAT": "DAT", "LOC": "LOC", "POH": "POH", "NOH": "NOH"}
+    # TYPE = {"ORG": "org", "PER": "per", "DAT": "dat", "LOC": "loc", "POH": "poh", "NOH": "noh"}
+    # TYPE = {"ORG": "ORGANIZATION", "PER": "PERSON", "DAT": "DATE", "LOC": "LOCATION", "POH": "POH", "NOH": "NUMBERS"}
+    # TYPE = {"ORG": "organization", "PER": "person", "DAT": "date", "LOC": "location", "POH": "poh", "NOH": "numbers"}
     TYPE = {"ORG": "단체", "PER": "사람", "DAT": "날짜", "LOC": "위치", "POH": "기타", "NOH": "수량"}
     # baseline code
     if method is None:
@@ -154,25 +158,25 @@ def entity_representation(subject_dict: dict, object_dict: dict, sentence: str, 
         if sub_start_idx < obj_start_idx:
             temp = (
                 sentence[:sub_start_idx]
-                + f"<S:{subject_entity}> "
+                + f"<S:{TYPE[subject_entity]}> "
                 + sentence[sub_start_idx : sub_end_idx + 1]
-                + f" </S:{subject_entity}> "
+                + f" </S:{TYPE[subject_entity]}> "
                 + sentence[sub_end_idx + 1 : obj_start_idx]
-                + f"<O:{object_entity}> "
+                + f"<O:{TYPE[object_entity]}> "
                 + sentence[obj_start_idx : obj_end_idx + 1]
-                + f" </O:{object_entity}> "
+                + f" </O:{TYPE[object_entity]}> "
                 + sentence[obj_end_idx + 1 :]
             )
         else:
             temp = (
                 sentence[:obj_start_idx]
-                + f"<O:{object_entity}> "
+                + f"<O:{TYPE[object_entity]}> "
                 + sentence[obj_start_idx : obj_end_idx + 1]
-                + f" </O:{object_entity}> "
+                + f" </O:{TYPE[object_entity]}> "
                 + sentence[obj_end_idx + 1 : sub_start_idx]
-                + f"<S:{subject_entity}> "
+                + f"<S:{TYPE[subject_entity]}> "
                 + sentence[sub_start_idx : sub_end_idx + 1]
-                + f" </S:{subject_entity}> "
+                + f" </S:{TYPE[subject_entity]}> "
                 + sentence[sub_end_idx + 1 :]
             )
 

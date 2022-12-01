@@ -21,6 +21,7 @@ def get_training_args(
     evaluation_strategy="epoch",
     load_best_model_at_end=True,
     metric_for_best_model="eval_micro_f1_score",
+    fp16=True,
 ):
     training_args = TrainingArguments(
         output_dir=output_dir,  # output directory
@@ -42,6 +43,7 @@ def get_training_args(
         metric_for_best_model=metric_for_best_model,
         # 사용한 option 외에도 다양한 option들이 있습니다.
         # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
+        fp16=fp16,
     )
     return training_args
 
@@ -141,7 +143,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="klue/roberta-large",
+        default="klue/roberta-small",
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"},
     )
     config_name: Optional[str] = field(

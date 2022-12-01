@@ -39,11 +39,11 @@ def train(model_args, data_args, training_args):
     model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
 
     # new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
-    # new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
-    # special_tokens_dict = {"additional_special_tokens": new_special_tokens}
+    new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
+    special_tokens_dict = {"additional_special_tokens": new_special_tokens}
     # tokenizer.add_tokens(new_tokens)
-    # tokenizer.add_special_tokens(special_tokens_dict)
-    # model.resize_token_embeddings(len(tokenizer))
+    tokenizer.add_special_tokens(special_tokens_dict)
+    model.resize_token_embeddings(len(tokenizer))
 
     model.parameters
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
