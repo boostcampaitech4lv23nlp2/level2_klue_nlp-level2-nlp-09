@@ -11,10 +11,10 @@ def get_training_args(
     save_total_limit=5,
     save_strategy="epoch",
     num_train_epochs=5,
-    learning_rate=5e-5,
+    learning_rate=29e-6,
     per_device_train_batch_size=32,
     per_device_eval_batch_size=32,
-    warmup_steps=458,
+    warmup_ratio=0.1,
     weight_decay=0.01,
     logging_dir="./logs",
     logging_steps=100,
@@ -30,7 +30,7 @@ def get_training_args(
         learning_rate=learning_rate,  # learning_rate
         per_device_train_batch_size=per_device_train_batch_size,  # batch size per device during training
         per_device_eval_batch_size=per_device_eval_batch_size,  # batch size for evaluation
-        warmup_steps=warmup_steps,  # number of warmup steps for learning rate scheduler
+        warmup_ratio=warmup_ratio,  # number of warmup steps for learning rate scheduler
         weight_decay=weight_decay,  # strength of weight decay
         logging_dir=logging_dir,  # directory for storing logs
         logging_steps=logging_steps,  # log saving step.
@@ -117,7 +117,7 @@ class DataTrainingArguments:
         },
     )
     train_file_path: Optional[str] = field(
-        default="dataset/train/train.csv", metadata={"help": "A csv or a json file containing the training data."}
+        default="dataset/train/re_train.csv", metadata={"help": "A csv or a json file containing the training data."}
     )
     validation_file_path: Optional[str] = field(
         default="dataset/train/valid.csv", metadata={"help": "A csv or a json file containing the validation data."}
