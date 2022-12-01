@@ -66,7 +66,7 @@ In this competition, KLUE dataset for relation extraction was used. It can be do
 https://aistages-prod-server-public.s3.amazonaws.com/app/Competitions/000075/data/dataset.tar.gz
 
 ### EDA
-EDA can be seen from eda_basics.ipynb file under eda folder.
+EDA can be seen from eda_basics.ipynb file under eda folder or check out Wrap-Up Report.
 
 ## Leaderboard
 ||Micro F1|AUPRC|Rank|
