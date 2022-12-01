@@ -60,6 +60,7 @@ make dashboard
 Then you can acess dashboard through your web browser.
 (If you use **VScode**, check [issue](https://github.com/boostcampaitech4lv23nlp2/level2_klue_nlp-level2-nlp-09/issues/15))
 
+--- 
 ### Data
 In this competition, KLUE dataset for relation extraction was used. It can be downloaded from the link below:
 https://aistages-prod-server-public.s3.amazonaws.com/app/Competitions/000075/data/dataset.tar.gz
