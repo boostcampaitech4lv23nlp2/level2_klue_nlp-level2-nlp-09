@@ -11,7 +11,7 @@ def get_training_args(
     save_total_limit=5,
     save_strategy="epoch",
     num_train_epochs=5,
-    learning_rate=5e-5,
+    learning_rate=29e-6,
     per_device_train_batch_size=32,
     per_device_eval_batch_size=32,
     warmup_steps=458,
@@ -21,7 +21,6 @@ def get_training_args(
     evaluation_strategy="epoch",
     load_best_model_at_end=True,
     metric_for_best_model="eval_micro_f1_score",
-    fp16=True,
 ):
     training_args = TrainingArguments(
         output_dir=output_dir,  # output directory
@@ -41,7 +40,6 @@ def get_training_args(
         # `epoch`: Evaluate every end of epoch.
         load_best_model_at_end=load_best_model_at_end,
         metric_for_best_model=metric_for_best_model,
-        fp16=fp16,
         # 사용한 option 외에도 다양한 option들이 있습니다.
         # https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments 참고해주세요.
     )
