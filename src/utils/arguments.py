@@ -119,14 +119,14 @@ class DataTrainingArguments:
         },
     )
     train_file_path: Optional[str] = field(
-        default="dataset/train/train_new_2_classes.csv",
+        default="dataset/train/train_new_29_classes.csv",
         metadata={"help": "A csv or a json file containing the training data."},
     )
     validation_file_path: Optional[str] = field(
         default="dataset/train/valid.csv", metadata={"help": "A csv or a json file containing the validation data."}
     )
     best_model_dir_path: Optional[str] = field(
-        default="src/2_class_best_model", metadata={"help": "A diretory containing the best model to save"}
+        default="src/29_class_best_model", metadata={"help": "A diretory containing the best model to save"}
     )
     test_file_path: Optional[str] = field(
         default="dataset/test/test_data.csv", metadata={"help": "A csv or a json file containing the test data."}

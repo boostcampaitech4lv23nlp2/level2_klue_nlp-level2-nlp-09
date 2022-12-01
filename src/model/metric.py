@@ -14,10 +14,10 @@ def klue_re_micro_f1(preds, labels):
 
 def klue_re_auprc(probs, labels):
     """KLUE-RE AUPRC (with no_relation)"""
-    labels = np.eye(2)[labels]
+    labels = np.eye(29)[labels]
 
-    score = np.zeros((2,))
-    for c in range(2):
+    score = np.zeros((29,))
+    for c in range(29):
         targets_c = labels.take([c], axis=1).ravel()
         preds_c = probs.take([c], axis=1).ravel()
         precision, recall, _ = sklearn.metrics.precision_recall_curve(targets_c, preds_c)
