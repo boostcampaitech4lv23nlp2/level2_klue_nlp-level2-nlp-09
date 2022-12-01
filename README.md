@@ -27,33 +27,33 @@ The competition is on sentence-level Relation Extraction.
 
 ## 📄 Guideline
 
-### 1. Setup
+#### 1. Setup
 Install all the prerequisites in one go.
 ```bash
 make setup
 ```
 
-### 2. Code formatting & Check lint
+#### 2. Code formatting & Check lint
 ```bash
 make style
 ```
 
-### 3. Code Testing
+#### 3. Code Testing
 ```bash
 make test
 ```
 
-### 4. Training
+#### 4. Training
 ```bash
 python main.py
 ```
 
-### 5. Inference
+#### 5. Inference
 ```bash
 python main.py --do_train=False --do_inference
 ```
 
-### 6. Run Dashboard
+#### 6. Run Dashboard
 ```bash
 make dashboard
 ```
