@@ -11,7 +11,7 @@ def get_training_args(
     save_total_limit=5,
     save_strategy="epoch",
     num_train_epochs=5,
-    learning_rate=5e-5,
+    learning_rate=29e-6,
     per_device_train_batch_size=32,
     per_device_eval_batch_size=32,
     warmup_steps=458,
@@ -67,7 +67,7 @@ class DataTrainingArguments:
     dataset_config_name: Optional[str] = field(
         default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
     )
-    seed: int = field(default=200)
+    seed: int = field(default=100)
     max_seq_length: int = field(
         default=256,
         metadata={
@@ -126,7 +126,7 @@ class DataTrainingArguments:
         default="dataset/train/valid.csv", metadata={"help": "A csv or a json file containing the validation data."}
     )
     best_model_dir_path: Optional[str] = field(
-        default="src/best_model", metadata={"help": "A diretory containing the best model to save"}
+        default="src/2_class_best_model", metadata={"help": "A diretory containing the best model to save"}
     )
     test_file_path: Optional[str] = field(
         default="dataset/test/test_data.csv", metadata={"help": "A csv or a json file containing the test data."}
