@@ -1,25 +1,15 @@
 # Relation Extraction Task
-# Relation Extraction Task
 
 This is 🌏Earth Coding Lab's repository for the 2nd boostcamp AI Tech competition (2022.11.14 ~ 2022.12.01 19:00).
-This is 🌏Earth Coding Lab's repository for the 2nd boostcamp AI Tech competition (2022.11.14 ~ 2022.12.01 19:00).
+
 
 The competition is on sentence-level Relation Extraction.
-The competition is on sentence-level Relation Extraction.
 
-- Here is our Wrap-Up Report [link]
-- Here is our Wrap-Up Report [link]
-
-- Here is our Presentation [link]
+- Here is our Wrap-Up Report [link](https://www.notion.so/earth-coding-lab/Wrap-Up-Relation-Extraction-Task-de871ff11d334a0e92f53c57e368c00c)
 - Here is our Presentation [link]
 
 ## Contributors
-## Contributors
 
-|Yong Woo Song|Woo Bin Park|Jin Myeong Ahn|Yeong Cheol Kang|Gang Hyeok Lee|
-|:-:|:-:|:-:|:-:|:-:|
-|<img src='https://avatars.githubusercontent.com/facerain' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/wbin0718' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/jinmyeongAN' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/kyc3492' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/ghlrobin' height=120 width=120></img>
-[Github](https://github.com/facerain)|[Github](https://github.com/wbin0718)|[Github](https://github.com/jinmyeongAN)|[Github](https://github.com/kyc3492)|[Github](https://github.com/ghlrobin)
 |Yong Woo Song|Woo Bin Park|Jin Myeong Ahn|Yeong Cheol Kang|Gang Hyeok Lee|
 |:-:|:-:|:-:|:-:|:-:|
 |<img src='https://avatars.githubusercontent.com/facerain' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/wbin0718' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/jinmyeongAN' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/kyc3492' height=120 width=120></img>|<img src='https://avatars.githubusercontent.com/ghlrobin' height=120 width=120></img>
