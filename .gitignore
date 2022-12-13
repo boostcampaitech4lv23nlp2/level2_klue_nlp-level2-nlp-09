@@ -1,10 +1,3 @@
-*.csv
-*.ipynb_checkpoints
-results/
-._test
-._train
-best_model/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -141,4 +134,16 @@ dmypy.json
 .DS_Store
 test.ipynb
 mlflow_config.yml
+sftp_config.yml
 logs/
+mlruns/
+*.ipynb_checkpoints
+dataset/
+prediction/
+results/
+._test
+._train
+best_model/
+tmp_trainer/
+download_model/
+result_analysis/

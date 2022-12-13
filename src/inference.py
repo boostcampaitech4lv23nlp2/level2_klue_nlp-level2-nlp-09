@@ -7,12 +7,13 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, Trainer, TrainingArguments
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from load_data import RE_Dataset, load_data, tokenized_dataset
+from src.data_loader import REDataset, data_loader
+from src.utils import num_to_label
 
 
-def inference(model, tokenized_sent, device):
+def predict(model, tokenized_sent, device):
     """
     test dataset을 DataLoader로 만들어 준 후,
     batch_size로 나눠 model이 예측 합니다.
@@ -39,76 +40,38 @@ def inference(model, tokenized_sent, device):
     return np.concatenate(output_pred).tolist(), np.concatenate(output_prob, axis=0).tolist()
 
 
-def num_to_label(label):
-    """
-    숫자로 되어 있던 class를 원본 문자열 라벨로 변환 합니다.
-    """
-    origin_label = []
-    with open("dict_num_to_label.pkl", "rb") as f:
-        dict_num_to_label = pickle.load(f)
-    for v in label:
-        origin_label.append(dict_num_to_label[v])
-
-    return origin_label
-
-
-def load_test_dataset(dataset_dir, tokenizer):
-    """
-    test dataset을 불러온 후,
-    tokenizing 합니다.
-    """
-    test_dataset = load_data(dataset_dir)
-    test_label = list(map(int, test_dataset["label"].values))
-    # tokenizing dataset
-    tokenized_test = tokenized_dataset(test_dataset, tokenizer)
-    return test_dataset["id"], tokenized_test, test_label
-
-
-def main(args):
+def inference(model_args, data_args, training_args):
     """
     주어진 dataset csv 파일과 같은 형태일 경우 inference 가능한 코드입니다.
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # load tokenizer
-    Tokenizer_NAME = "klue/bert-base"
-    tokenizer = AutoTokenizer.from_pretrained(Tokenizer_NAME)
-
-    # load my model
-    # MODEL_NAME = args.model_dir  # model dir.
-    model = AutoModelForSequenceClassification.from_pretrained(args.model_dir)
-    model.parameters
+    model = AutoModelForSequenceClassification.from_pretrained(data_args.best_model_dir_path)
     model.to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
+
+    # new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
+    # new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
+    # special_tokens_dict = {"additional_special_tokens": new_special_tokens}
+    # tokenizer.add_tokens(new_tokens)
+    # tokenizer.add_special_tokens(special_tokens_dict)
+    # model.resize_token_embeddings(len(tokenizer))
 
     # load test datset
-    test_dataset_dir = "../dataset/test/test_data.csv"
-    test_id, test_dataset, test_label = load_test_dataset(test_dataset_dir, tokenizer)
-    Re_test_dataset = RE_Dataset(test_dataset, test_label)
+    test_raw_dataset = data_loader(data_args.test_file_path)
+    test_label = [100 for _ in range(len(test_raw_dataset))]
+    test_dataset = REDataset(test_raw_dataset, tokenizer, test_label)
 
     # predict answer
-    pred_answer, output_prob = inference(model, Re_test_dataset, device)  # model에서 class 추론
-    pred_answer = num_to_label(pred_answer)  # 숫자로 된 class를 원래 문자열 라벨로 변환.
+    pred_answer, output_prob = predict(model, test_dataset, device)
+    pred_answer = num_to_label(pred_answer)
 
-    # make csv file with predicted answer
-    #########################################################
-    # 아래 directory와 columns의 형태는 지켜주시기 바랍니다.
     output = pd.DataFrame(
         {
-            "id": test_id,
+            "id": test_raw_dataset["id"],
             "pred_label": pred_answer,
             "probs": output_prob,
         }
     )
 
-    output.to_csv("./prediction/submission.csv", index=False)  # 최종적으로 완성된 예측한 라벨 csv 파일 형태로 저장.
-    # 필수!!
+    output.to_csv(data_args.submission_file_path, index=False)
     print("---- Finish! ----")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    # model dir
-    parser.add_argument("--model_dir", type=str, default="./best_model")
-    args = parser.parse_args()
-    print(args)
-    main(args)
