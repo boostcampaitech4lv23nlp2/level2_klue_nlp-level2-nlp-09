@@ -94,3 +94,11 @@ class RepresentationTester(unittest.TestCase):
                 subject, object, sentence, entity_method=None, translation_methods=["japanese"]
             )
             self.assertEqual(generate_text, answer)
+
+    def test_custom(self):
+        for example_object, answer in zip(test_objects[1:], japanese_answers):
+            sentence, subject, object = example_object
+            generate_text = representation(
+                subject, object, sentence, entity_method="typed_entity_marker_punct_custom", translation_methods=[]
+            )
+            self.assertEqual(generate_text, answer)

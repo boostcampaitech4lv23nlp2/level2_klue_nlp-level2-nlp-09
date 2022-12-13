@@ -5,7 +5,7 @@ import torch
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, Trainer
 
 from src.data_loader import REDataset, data_loader
-from src.model import compute_metrics
+from src.model import RBert, compute_metrics
 from src.utils import get_train_valid_split, label_to_num, save_model_remote, set_mlflow_logger, set_seed
 from src.utils.custom_trainer import CustomTrainer
 
@@ -34,15 +34,16 @@ def train(model_args, data_args, training_args):
 
     # load model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path)
+    special_tokens_dict = {"additional_special_tokens": ["<S>", "</S>", "<O>", "</O>"]}
+    # new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
+    tokenizer.add_special_tokens(special_tokens_dict)
+    # tokenizer.add_tokens(new_tokens)
 
     # model
-    model = AutoModelForSequenceClassification.from_pretrained(model_args.model_name_or_path, config=model_config)
+    model = RBert(model_config, tokenizer, model_args.model_name_or_path)
 
-    # new_tokens = pd.read_csv("src/new_tokens.csv").columns.tolist()
     # new_special_tokens = pd.read_csv("src/special_tokens.csv").columns.tolist()
-    # special_tokens_dict = {"additional_special_tokens": new_special_tokens}
-    # tokenizer.add_tokens(new_tokens)
-    # tokenizer.add_special_tokens(special_tokens_dict)
+
     # model.resize_token_embeddings(len(tokenizer))
 
     model.parameters
@@ -55,7 +56,7 @@ def train(model_args, data_args, training_args):
     train_dataset = REDataset(train_raw_dataset, tokenizer, train_label)
     valid_dataset = REDataset(valid_raw_dataset, tokenizer, valid_label)
 
-    trainer = Trainer(
+    trainer = CustomTrainer(
         model=model,  # the instantiated 🤗 Transformers model to be trained
         args=training_args,  # training arguments, defined above
         train_dataset=train_dataset,  # training dataset
@@ -71,5 +72,6 @@ def train(model_args, data_args, training_args):
 
     model_id = set_mlflow_logger(special_word, tracking_uri, experiment_name, logging_step)
     trainer.train()
-    model.save_pretrained(data_args.best_model_dir_path)
+    # model.save_pretrained(data_args.best_model_dir_path)
+    torch.save(model.state_dict(), "model.pt")
     save_model_remote(experiment_name, model_id)
