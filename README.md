@@ -5,8 +5,8 @@ This is 🌏Earth Coding Lab's repository for the 2nd boostcamp AI Tech competit
 
 The competition is on sentence-level Relation Extraction.
 
-- Here is our Wrap-Up Report [link](https://www.notion.so/earth-coding-lab/Wrap-Up-Relation-Extraction-Task-de871ff11d334a0e92f53c57e368c00c)
-- Here is our Presentation [link]
+- Here is our Wrap-Up Report [(link)](https://www.notion.so/earth-coding-lab/Wrap-Up-Relation-Extraction-Task-de871ff11d334a0e92f53c57e368c00c)
+- Here is our Presentation [(link)](https://github.com/boostcampaitech4lv23nlp2/level2_klue_nlp-level2-nlp-09/blob/main/level2-klue-nlp09-%EC%A7%80%EA%B5%AC%EC%BD%94%EB%94%A9%EC%8B%A4.pdf)
 
 ## Contributors
 
